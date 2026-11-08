@@ -9,6 +9,7 @@ import '../utils/ui.dart';
 import '../widgets/absence_range_dialog.dart';
 import '../widgets/common.dart';
 import '../widgets/day_editor.dart';
+import '../widgets/responsive.dart';
 
 /// Vacation balance: entitlement per year, carry-over, taken, planned, remaining.
 class VacationScreen extends StatefulWidget {
@@ -73,6 +74,24 @@ class _VacationScreenState extends State<VacationScreen> {
     await _load();
   }
 
+  /// Removes the vacation of a whole period (all its days) after confirmation.
+  Future<void> _deletePeriod(List<TimeEntry> period, VacationSummary sum) async {
+    final l = context.l;
+    final days = VacationService.entriesBetween(sum.entries, period.first.date, period.last.date);
+    final ok = await Pickers.confirm(
+      context,
+      title: l.vacationDeletePeriod,
+      message: l.vacationDeletePeriodMessage(
+        context.fmtDateShort(period.first.date),
+        context.fmtDateShort(period.last.date),
+      ),
+    );
+    if (!ok || !mounted) return;
+    final n = await _service.removeVacations(days);
+    if (mounted) context.toast(l.vacationPeriodDeleted(n));
+    await _load();
+  }
+
   /// Groups consecutive vacation days (non-working days in between are ignored).
   List<List<TimeEntry>> _periods(VacationSummary sum, AppSettings s) {
     final out = <List<TimeEntry>>[];
@@ -116,7 +135,7 @@ class _VacationScreenState extends State<VacationScreen> {
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
-              child: ListView(
+              child: CenteredListView(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
                 children: [
                   Row(
@@ -222,9 +241,19 @@ class _VacationScreenState extends State<VacationScreen> {
                                 absencePartLabel(context, p.first.absencePart, customMinutes: p.first.absenceMinutes),
                               )
                             : null,
-                        trailing: Text(
-                          l.daysCount(f(p.fold(0.0, (a, e) => a + VacationService.daysOf(e, s)))),
-                          style: t.titleSmall,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              l.daysCount(f(p.fold(0.0, (a, e) => a + VacationService.daysOf(e, s)))),
+                              style: t.titleSmall,
+                            ),
+                            IconButton(
+                              tooltip: l.vacationDeletePeriod,
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => _deletePeriod(p, sum),
+                            ),
+                          ],
                         ),
                         onTap: () => _openDay(p.first.date),
                       ),

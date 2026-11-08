@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../drawing/drawing.dart';
 import '../utils/ui.dart';
@@ -152,6 +153,8 @@ class _DrawingScreenState extends State<DrawingScreen> {
 
   void _onDown(PointerDownEvent ev) {
     if (_pointer != null || _busy) return;
+    // Mouse: only the left button draws.
+    if (ev.kind == PointerDeviceKind.mouse && ev.buttons != kPrimaryMouseButton) return;
     _pointer = ev.pointer;
     final p = _toDrawing(ev.localPosition);
     _start = p;
@@ -393,72 +396,86 @@ class _DrawingScreenState extends State<DrawingScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _leave();
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l.drawingTitle),
-          actions: [
-            IconButton(tooltip: l.undo, icon: const Icon(Icons.undo), onPressed: _undo.isEmpty ? null : _doUndo),
-            IconButton(tooltip: l.redo, icon: const Icon(Icons.redo), onPressed: _redo.isEmpty ? null : _doRedo),
-            IconButton(
-              tooltip: l.clearDrawing,
-              icon: const Icon(Icons.delete_sweep_outlined),
-              onPressed: (_d?.elements.isEmpty ?? true)
-                  ? null
-                  : () async {
-                      if (await Pickers.confirm(context)) {
-                        _snapshot();
-                        _d!.elements.clear();
-                        _editableArc = null;
-                        _invalidate();
-                      }
-                    },
-            ),
-            IconButton(tooltip: l.save, icon: const Icon(Icons.check), onPressed: _save),
-          ],
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: ColoredBox(
-                color: cs.surfaceContainerHighest,
-                child: LayoutBuilder(
-                  builder: (context, c) {
-                    _d ??= Drawing(width: c.maxWidth, height: c.maxHeight);
-                    final d = _d!;
-                    _scale = math.min(c.maxWidth / d.width, c.maxHeight / d.height);
-                    _offset = Offset((c.maxWidth - d.width * _scale) / 2, (c.maxHeight - d.height * _scale) / 2);
-                    return Listener(
-                      key: const ValueKey('drawing-canvas'),
-                      behavior: HitTestBehavior.opaque,
-                      onPointerDown: _onDown,
-                      onPointerMove: _onMove,
-                      onPointerUp: _onUp,
-                      onPointerCancel: _onUp,
-                      child: ClipRect(
-                        child: CustomPaint(
-                          size: Size.infinite,
-                          painter: _EditorPainter(
-                            drawing: d,
-                            committed: _picture(),
-                            current: _current,
-                            scale: _scale,
-                            offset: _offset,
-                            handle: _tool == DrawTool.arc && _editableArc != null
-                                ? Offset(_editableArc!.data[4], _editableArc!.data[5])
-                                : null,
-                            handleColor: cs.primary,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.keyZ, control: true): _doUndo,
+          const SingleActivator(LogicalKeyboardKey.keyY, control: true): _doRedo,
+          const SingleActivator(LogicalKeyboardKey.keyZ, control: true, shift: true): _doRedo,
+          const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(l.drawingTitle),
+              actions: [
+                IconButton(tooltip: l.undo, icon: const Icon(Icons.undo), onPressed: _undo.isEmpty ? null : _doUndo),
+                IconButton(tooltip: l.redo, icon: const Icon(Icons.redo), onPressed: _redo.isEmpty ? null : _doRedo),
+                IconButton(
+                  tooltip: l.clearDrawing,
+                  icon: const Icon(Icons.delete_sweep_outlined),
+                  onPressed: (_d?.elements.isEmpty ?? true)
+                      ? null
+                      : () async {
+                          if (await Pickers.confirm(context)) {
+                            _snapshot();
+                            _d!.elements.clear();
+                            _editableArc = null;
+                            _invalidate();
+                          }
+                        },
                 ),
-              ),
+                IconButton(tooltip: l.save, icon: const Icon(Icons.check), onPressed: _save),
+              ],
             ),
-            // Fixed height so the canvas never changes size while drawing.
-            SizedBox(height: 4, child: _busy ? const LinearProgressIndicator() : null),
-            _toolbar(context),
-          ],
+            body: Column(
+              children: [
+                Expanded(
+                  child: ColoredBox(
+                    color: cs.surfaceContainerHighest,
+                    child: LayoutBuilder(
+                      builder: (context, c) {
+                        _d ??= Drawing(width: c.maxWidth, height: c.maxHeight);
+                        final d = _d!;
+                        _scale = math.min(c.maxWidth / d.width, c.maxHeight / d.height);
+                        _offset = Offset((c.maxWidth - d.width * _scale) / 2, (c.maxHeight - d.height * _scale) / 2);
+                        return Listener(
+                          key: const ValueKey('drawing-canvas'),
+                          behavior: HitTestBehavior.opaque,
+                          onPointerDown: _onDown,
+                          onPointerMove: _onMove,
+                          onPointerUp: _onUp,
+                          onPointerCancel: _onUp,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.precise,
+                            child: ClipRect(
+                              child: CustomPaint(
+                                size: Size.infinite,
+                                painter: _EditorPainter(
+                                  drawing: d,
+                                  committed: _picture(),
+                                  current: _current,
+                                  scale: _scale,
+                                  offset: _offset,
+                                  handle: _tool == DrawTool.arc && _editableArc != null
+                                      ? Offset(_editableArc!.data[4], _editableArc!.data[5])
+                                      : null,
+                                  handleColor: cs.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                // Fixed height so the canvas never changes size while drawing.
+                SizedBox(height: 4, child: _busy ? const LinearProgressIndicator() : null),
+                _toolbar(context),
+              ],
+            ),
+          ),
         ),
       ),
     );

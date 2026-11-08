@@ -1,15 +1,11 @@
-import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/gen/app_localizations.dart';
+import '../platform/platform.dart';
 import '../services/settings.dart';
 import 'dates.dart';
 
@@ -30,6 +26,12 @@ extension ContextX on BuildContext {
 
 /// All time entries go through these pickers.
 class Pickers {
+  /// With a physical keyboard, typing "08:15" is faster than the dial.
+  static TimePickerEntryMode get _timeEntryMode =>
+      const {TargetPlatform.linux, TargetPlatform.windows, TargetPlatform.macOS}.contains(defaultTargetPlatform)
+      ? TimePickerEntryMode.input
+      : TimePickerEntryMode.dial;
+
   static Future<DateTime?> date(BuildContext context, DateTime initial) {
     return showDatePicker(context: context, initialDate: initial, firstDate: DateTime(2000), lastDate: DateTime(2100));
   }
@@ -42,6 +44,7 @@ class Pickers {
     final t = await showTimePicker(
       context: context,
       initialTime: init,
+      initialEntryMode: _timeEntryMode,
       helpText: help,
       builder: (ctx, child) => MediaQuery(
         data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: use24h),
@@ -58,6 +61,7 @@ class Pickers {
     final t = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: (m ~/ 60).clamp(0, 23), minute: m % 60),
+      initialEntryMode: _timeEntryMode,
       helpText: help ?? context.l.hoursMinutes,
       builder: (ctx, child) =>
           MediaQuery(data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true), child: child!),
@@ -105,56 +109,12 @@ class Pickers {
 
 class Files {
   /// Asks the user where to save [bytes]. Returns true if saved.
-  static Future<bool> saveToDevice(String fileName, Uint8List bytes, {String? mime}) async {
-    final uri = await FilePicker.saveFile(
-      fileName: fileName,
-      bytes: bytes,
-      mimeType: mime ?? 'application/octet-stream',
-    );
-    if (uri == null) return false;
-    // Some desktop implementations only return the chosen path.
-    if (uri.scheme == 'file') {
-      final f = File(uri.toFilePath());
-      if (!await f.exists() || await f.length() != bytes.length) {
-        await f.writeAsBytes(bytes, flush: true);
-      }
-    }
-    return true;
-  }
-
-  static Future<Directory> _tempDir() async => Directory(p.join((await getTemporaryDirectory()).path, 'timelog_files'));
-
-  /// Deletes the temporary copies of attachments (opened files, audio played).
-  /// Called at start-up: the originals stay in the database.
-  static Future<void> clearTemp() async {
-    try {
-      final dir = await _tempDir();
-      if (await dir.exists()) await dir.delete(recursive: true);
-    } on FileSystemException {
-      // A file may still be open in another app: it will be removed next time.
-    }
-  }
-
-  /// Writes the file to a temporary location (cache) and returns it.
-  static Future<File> toTemp(String fileName, Uint8List bytes) async {
-    final sub = await _tempDir();
-    await sub.create(recursive: true);
-    final safe = fileName.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    final f = File(p.join(sub.path, safe));
-    await f.writeAsBytes(bytes, flush: true);
-    return f;
-  }
+  static Future<bool> saveToDevice(String fileName, Uint8List bytes, {String? mime}) =>
+      saveBytes(fileName, bytes, mime: mime);
 
   /// Opens the file with the default app of the device. Returns an error message or null.
-  static Future<String?> open(String fileName, Uint8List bytes, {String? mime}) async {
-    final f = await toTemp(fileName, bytes);
-    if (Platform.isLinux) {
-      final r = await Process.run('xdg-open', [f.path]);
-      return r.exitCode == 0 ? null : '${r.stderr}';
-    }
-    final r = await OpenFilex.open(f.path, type: mime);
-    return r.type == ResultType.done ? null : r.message;
-  }
+  static Future<String?> open(String fileName, Uint8List bytes, {String? mime}) =>
+      openBytes(fileName, bytes, mime: mime);
 
   static String? mimeFromName(String name) {
     switch (p.extension(name).toLowerCase()) {

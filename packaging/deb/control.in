@@ -1,0 +1,14 @@
+Package: timelog
+Version: @VERSION@-1
+Architecture: amd64
+Maintainer: Lukas Hofer <lukas.hofer.ju@gmail.com>
+Installed-Size: @SIZE@
+Section: utils
+Priority: optional
+Homepage: https://github.com/Hoferlukaslh/TimeLog
+Depends: libc6, libstdc++6, libgcc-s1, libglib2.0-0, libgtk-3-0, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0
+Recommends: gstreamer1.0-plugins-good, pulseaudio-utils
+Description: Heures, journal de travail et notes
+ TimeLog remplace la feuille de calcul des heures, le carnet de notes et le
+ journal de travail par une seule application. Fonctionne hors ligne ; la
+ synchronisation avec un serveur personnel est facultative.

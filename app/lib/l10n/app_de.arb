@@ -229,5 +229,19 @@
   "syncErrNetwork": "Server nicht erreichbar. Adresse und Verbindung prüfen.",
   "syncErrNotServer": "Diese Adresse ist kein TimeLog-Server.",
   "syncErrOther": "Fehler: {code}",
-  "licenses": "Lizenzen"
+  "licenses": "Lizenzen",
+  "vacationDeletePeriod": "Zeitraum löschen",
+  "vacationDeletePeriodMessage": "Urlaub vom {from} bis {to} entfernen? Alle Tage des Zeitraums werden wieder normale Arbeitstage; bereits eingegebene Zeiten bleiben erhalten.",
+  "@vacationDeletePeriodMessage": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "vacationPeriodDeleted": "Urlaub entfernt ({count} Tag(e))",
+  "@vacationPeriodDeleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

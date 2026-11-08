@@ -17,7 +17,7 @@ import 'sync_schema.dart';
 ///   both sides, the most recent change wins;
 /// * a deletion wins over older edits, a newer edit wins over a deletion.
 ///
-/// Not exposed in the interface yet. See docs/SYNC.md at the repository root.
+/// See docs/SYNC.md at the repository root.
 /// A local change to send and the last `sync_log` entry it covers.
 class PendingChange {
   final SyncChange change;

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -50,14 +49,11 @@ class HttpSyncBackend implements SyncBackend {
     http.Response response;
     try {
       response = await http.Response.fromStream(await _client.send(request).timeout(timeout));
-    } on SocketException catch (e) {
-      throw SyncNetworkException(e.message);
     } on TimeoutException {
       throw const SyncNetworkException('timeout');
-    } on http.ClientException catch (e) {
-      throw SyncNetworkException(e.message);
-    } on HandshakeException catch (e) {
-      throw SyncNetworkException(e.message);
+    } on Exception catch (e) {
+      // Connection refused, TLS failure, request blocked by the browser...
+      throw SyncNetworkException(e is http.ClientException ? e.message : '$e');
     }
     Map<String, Object?> json = const {};
     if (response.body.isNotEmpty) {

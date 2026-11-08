@@ -1,12 +1,13 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../data/repository.dart';
 import '../drawing/drawing.dart';
 import '../models/models.dart';
+import '../platform/platform.dart';
 import '../screens/drawing_screen.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
@@ -203,8 +204,8 @@ class _AudioPlayerTileState extends State<AudioPlayerTile> {
       }
       if (!_sourceSet) {
         final bytes = await AttachmentCache.get(widget.attachment.id!);
-        final f = await Files.toTemp('${widget.attachment.id}_${widget.attachment.fileName}', bytes);
-        await _player.setSource(DeviceFileSource(f.path, mimeType: widget.attachment.mime));
+        final name = '${widget.attachment.id}_${widget.attachment.fileName}';
+        await _player.setSource(await audioSourceFor(name, bytes, widget.attachment.mime));
         _sourceSet = true;
       }
       await _player.resume();

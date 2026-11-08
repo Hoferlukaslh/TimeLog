@@ -6,6 +6,7 @@ import '../services/categories_store.dart';
 import '../services/settings.dart';
 import '../utils/ui.dart';
 import '../widgets/common.dart';
+import '../widgets/responsive.dart';
 
 class CategoriesScreen extends StatelessWidget {
   final Widget? drawer;
@@ -74,7 +75,7 @@ class CategoriesScreen extends StatelessWidget {
           ? Center(
               child: EmptyState(icon: Icons.label_outline, text: l.noCategories),
             )
-          : ListView(
+          : CenteredListView(
               padding: const EdgeInsets.only(bottom: 88, top: 8),
               children: [
                 for (final c in cats)

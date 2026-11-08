@@ -14,10 +14,11 @@ import '../utils/ui.dart';
 import '../widgets/absence_range_dialog.dart';
 import '../widgets/common.dart';
 import '../widgets/day_editor.dart';
+import '../widgets/responsive.dart';
 
 class HoursScreen extends StatefulWidget {
-  final Widget drawer;
-  const HoursScreen({super.key, required this.drawer});
+  final Widget? drawer;
+  const HoursScreen({super.key, this.drawer});
 
   @override
   State<HoursScreen> createState() => _HoursScreenState();
@@ -149,13 +150,13 @@ class _HoursScreenState extends State<HoursScreen> with WidgetsBindingObserver {
         icon: const Icon(Icons.touch_app),
         label: Text(next == null ? l.clockIn : '${l.clockIn} · $next'),
       ),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 96),
-          children: [
+      body: LayoutBuilder(
+        builder: (context, c) {
+          final overview = [
             PeriodSelector(period: _period, onChanged: _setPeriod),
             if (_summary != null) _SummaryCard(summary: _summary!, overall: _overall, vacationLeft: _vacationLeft),
+          ];
+          final details = [
             if (_period.type == PeriodType.day)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -165,8 +166,24 @@ class _HoursScreenState extends State<HoursScreen> with WidgetsBindingObserver {
               ..._buildYear()
             else if (_summary != null)
               ..._buildDays(),
-          ],
-        ),
+          ];
+          if (!Responsive.twoColumns(context, c.maxWidth)) {
+            return RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(padding: const EdgeInsets.only(bottom: 96), children: [...overview, ...details]),
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 400, child: ListView(children: overview)),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: CenteredListView(padding: const EdgeInsets.only(top: 8, bottom: 96), children: details),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

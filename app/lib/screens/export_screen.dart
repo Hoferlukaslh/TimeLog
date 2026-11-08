@@ -7,6 +7,7 @@ import '../services/export_service.dart';
 import '../services/settings.dart';
 import '../utils/ui.dart';
 import '../widgets/attachment_views.dart';
+import '../widgets/responsive.dart';
 
 class ExportScreen extends StatefulWidget {
   final Widget? drawer;
@@ -80,7 +81,7 @@ class _ExportScreenState extends State<ExportScreen> {
     return Scaffold(
       drawer: widget.drawer,
       appBar: AppBar(title: Text(l.exportTitle)),
-      body: ListView(
+      body: CenteredListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(l.exportFormat, style: t.titleMedium),

@@ -1473,6 +1473,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Licenses'**
   String get licenses;
+
+  /// No description provided for @vacationDeletePeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete period'**
+  String get vacationDeletePeriod;
+
+  /// No description provided for @vacationDeletePeriodMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the vacation from {from} to {to}? All days of the period become normal working days; times already entered are kept.'**
+  String vacationDeletePeriodMessage(String from, String to);
+
+  /// No description provided for @vacationPeriodDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Vacation removed ({count} day(s))'**
+  String vacationPeriodDeleted(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

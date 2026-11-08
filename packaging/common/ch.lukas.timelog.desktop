@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=TimeLog
+Name[fr]=TimeLog
+Comment=Heures, journal de travail et notes
+Comment[fr]=Heures, journal de travail et notes
+Exec=timelog
+Icon=ch.lukas.timelog
+Terminal=false
+Categories=Office;
+StartupWMClass=ch.lukas.timelog

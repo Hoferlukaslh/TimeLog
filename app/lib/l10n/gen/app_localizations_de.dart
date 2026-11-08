@@ -731,4 +731,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get licenses => 'Lizenzen';
+
+  @override
+  String get vacationDeletePeriod => 'Zeitraum löschen';
+
+  @override
+  String vacationDeletePeriodMessage(String from, String to) {
+    return 'Urlaub vom $from bis $to entfernen? Alle Tage des Zeitraums werden wieder normale Arbeitstage; bereits eingegebene Zeiten bleiben erhalten.';
+  }
+
+  @override
+  String vacationPeriodDeleted(int count) {
+    return 'Urlaub entfernt ($count Tag(e))';
+  }
 }

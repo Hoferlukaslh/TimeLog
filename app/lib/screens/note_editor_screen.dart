@@ -1,19 +1,19 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../data/repository.dart';
 import '../drawing/drawing.dart';
 import '../models/models.dart';
+import '../platform/platform.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/attachment_views.dart';
 import '../widgets/common.dart';
 import '../widgets/markdown_editor.dart';
+import '../widgets/responsive.dart';
 import 'audio_recorder_screen.dart';
 import 'drawing_screen.dart';
 
@@ -42,7 +42,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   List<Attachment> _attachments = [];
   bool _busy = false;
 
-  bool get _canUseCamera => Platform.isAndroid || Platform.isIOS;
+  bool get _canUseCamera => Host.isMobile;
 
   @override
   void initState() {
@@ -301,94 +301,103 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _close();
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.note == null ? l.newNote : l.editNote),
-          actions: [
-            if (_id != null)
-              IconButton(
-                tooltip: l.delete,
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  if (await Pickers.confirm(context)) {
-                    await _repo.deleteNote(_id!);
-                    if (context.mounted) Navigator.pop(context);
-                  }
-                },
+      child: CallbackShortcuts(
+        bindings: {const SingleActivator(LogicalKeyboardKey.keyS, control: true): _close},
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(widget.note == null ? l.newNote : l.editNote),
+              actions: [
+                if (_id != null)
+                  IconButton(
+                    tooltip: l.delete,
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () async {
+                      if (await Pickers.confirm(context)) {
+                        await _repo.deleteNote(_id!);
+                        if (context.mounted) Navigator.pop(context);
+                      }
+                    },
+                  ),
+                IconButton(tooltip: l.save, icon: const Icon(Icons.check), onPressed: _close),
+              ],
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: CenteredBox(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _ActionButton(icon: Icons.photo_camera_outlined, label: l.addPhoto, onTap: _busy ? null : _photo),
+                      _ActionButton(icon: Icons.mic_none, label: l.addAudio, onTap: _busy ? null : _audio),
+                      _ActionButton(icon: Icons.draw_outlined, label: l.addDrawing, onTap: _busy ? null : _drawing),
+                      _ActionButton(icon: Icons.attach_file, label: l.addDocument, onTap: _busy ? null : _document),
+                    ],
+                  ),
+                ),
               ),
-            IconButton(tooltip: l.save, icon: const Icon(Icons.check), onPressed: _close),
-          ],
-        ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            ),
+            body: CenteredListView(
+              maxWidth: 900,
+              padding: const EdgeInsets.all(16),
               children: [
-                _ActionButton(icon: Icons.photo_camera_outlined, label: l.addPhoto, onTap: _busy ? null : _photo),
-                _ActionButton(icon: Icons.mic_none, label: l.addAudio, onTap: _busy ? null : _audio),
-                _ActionButton(icon: Icons.draw_outlined, label: l.addDrawing, onTap: _busy ? null : _drawing),
-                _ActionButton(icon: Icons.attach_file, label: l.addDocument, onTap: _busy ? null : _document),
+                Row(
+                  children: [
+                    const Icon(Icons.event, size: 18),
+                    const SizedBox(width: 8),
+                    Text(context.fmtDateLong(_date), style: Theme.of(context).textTheme.titleSmall),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _title,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(labelText: l.title, prefixIcon: const Icon(Icons.short_text)),
+                ),
+                const SizedBox(height: 12),
+                CategoryDropdown(value: _categoryId, onChanged: (v) => setState(() => _categoryId = v)),
+                const SizedBox(height: 12),
+                MarkdownEditor(controller: _content, label: l.noteText, minLines: 4),
+                if (_busy) const Padding(padding: EdgeInsets.all(12), child: LinearProgressIndicator()),
+                if (_attachments.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(l.attachments, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                ],
+                if (images.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final a in images)
+                        Stack(
+                          children: [
+                            InkWell(
+                              onTap: () => _openAttachment(a),
+                              child: AttachmentThumb(attachment: a, size: 110),
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: _menu(a),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                for (final a in audios) AudioPlayerTile(attachment: a, trailing: _menu(a)),
+                for (final a in docs) DocumentTile(attachment: a, onTap: () => _openAttachment(a), trailing: _menu(a)),
               ],
             ),
           ),
-        ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.event, size: 18),
-                const SizedBox(width: 8),
-                Text(context.fmtDateLong(_date), style: Theme.of(context).textTheme.titleSmall),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _title,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: l.title, prefixIcon: const Icon(Icons.short_text)),
-            ),
-            const SizedBox(height: 12),
-            CategoryDropdown(value: _categoryId, onChanged: (v) => setState(() => _categoryId = v)),
-            const SizedBox(height: 12),
-            MarkdownEditor(controller: _content, label: l.noteText, minLines: 4),
-            if (_busy) const Padding(padding: EdgeInsets.all(12), child: LinearProgressIndicator()),
-            if (_attachments.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(l.attachments, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-            ],
-            if (images.isNotEmpty)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final a in images)
-                    Stack(
-                      children: [
-                        InkWell(
-                          onTap: () => _openAttachment(a),
-                          child: AttachmentThumb(attachment: a, size: 110),
-                        ),
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-                              shape: BoxShape.circle,
-                            ),
-                            child: _menu(a),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            for (final a in audios) AudioPlayerTile(attachment: a, trailing: _menu(a)),
-            for (final a in docs) DocumentTile(attachment: a, onTap: () => _openAttachment(a), trailing: _menu(a)),
-          ],
         ),
       ),
     );

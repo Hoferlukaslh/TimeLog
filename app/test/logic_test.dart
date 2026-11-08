@@ -210,6 +210,59 @@ void main() {
       expect(cur.remaining, cur.total - cur.taken - cur.planned);
     });
 
+    test('removing a vacation period clears every day at once', () async {
+      final repo = Repository.instance;
+      final svc = VacationService();
+      final s = AppSettings()..vacationDaysPerYear = 25;
+      const y = 2026;
+      // Period of 3 days (Mon–Wed 5–7 Jan), a half day with a time already entered, a day outside.
+      await repo.saveTimeEntry(TimeEntry(date: DateTime(y, 1, 5), dayType: DayType.vacation));
+      await repo.saveTimeEntry(TimeEntry(date: DateTime(y, 1, 6), dayType: DayType.vacation));
+      await repo.saveTimeEntry(
+        TimeEntry(
+          date: DateTime(y, 1, 7),
+          dayType: DayType.vacation,
+          absencePart: AbsencePart.morning,
+          arrival: 13 * 60,
+          departure: 17 * 60,
+        ),
+      );
+      await repo.saveTimeEntry(TimeEntry(date: DateTime(y, 1, 12), dayType: DayType.vacation));
+
+      var sum = await svc.summary(y, s);
+      expect(sum.entries.length, 4);
+      final period = VacationService.entriesBetween(sum.entries, DateTime(y, 1, 5), DateTime(y, 1, 7));
+      expect(period.length, 3);
+
+      expect(await svc.removeVacations(period), 3);
+
+      sum = await svc.summary(y, s);
+      expect(sum.entries.map((e) => e.date.day), [12]); // day outside the period untouched
+      expect(await repo.timeEntry(DateTime(y, 1, 5)), isNull); // empty day removed
+      final half = await repo.timeEntry(DateTime(y, 1, 7));
+      expect(half!.dayType, DayType.work); // times kept, absence gone
+      expect(half.arrival, 13 * 60);
+      expect(half.departure, 17 * 60);
+      expect(half.absencePart, AbsencePart.full);
+    });
+
+    test('withoutAbsence keeps comments and returns null for an empty day', () {
+      final d = DateTime(2026, 1, 5);
+      expect(VacationService.withoutAbsence(TimeEntry(date: d, dayType: DayType.vacation)), isNull);
+      final kept = VacationService.withoutAbsence(
+        TimeEntry(
+          date: d,
+          dayType: DayType.vacation,
+          comment: 'Voyage',
+          absenceMinutes: 120,
+          absencePart: AbsencePart.custom,
+        ),
+      );
+      expect(kept!.dayType, DayType.work);
+      expect(kept.comment, 'Voyage');
+      expect(kept.absenceMinutes, isNull);
+    });
+
     test('vacation days of an entry', () {
       final s = AppSettings()..dailyTargetMinutes = 480;
       final mon = DateTime(2026, 1, 5), sat = DateTime(2026, 1, 10);

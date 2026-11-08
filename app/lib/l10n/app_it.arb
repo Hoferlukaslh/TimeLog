@@ -229,5 +229,19 @@
   "syncErrNetwork": "Server non raggiungibile. Controlla l'indirizzo e la connessione.",
   "syncErrNotServer": "Questo indirizzo non è un server TimeLog.",
   "syncErrOther": "Errore: {code}",
-  "licenses": "Licenze"
+  "licenses": "Licenze",
+  "vacationDeletePeriod": "Elimina periodo",
+  "vacationDeletePeriodMessage": "Rimuovere le ferie dal {from} al {to}? Tutti i giorni del periodo tornano giorni lavorativi normali; le ore già inserite vengono conservate.",
+  "@vacationDeletePeriodMessage": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "vacationPeriodDeleted": "Ferie rimosse ({count} giorno/i)",
+  "@vacationPeriodDeleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

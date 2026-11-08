@@ -229,5 +229,19 @@
   "syncErrNetwork": "Serveur injoignable. Vérifiez l'adresse et la connexion.",
   "syncErrNotServer": "Cette adresse n'est pas un serveur TimeLog.",
   "syncErrOther": "Erreur : {code}",
-  "licenses": "Licences"
+  "licenses": "Licences",
+  "vacationDeletePeriod": "Supprimer la période",
+  "vacationDeletePeriodMessage": "Retirer les vacances du {from} au {to} ? Tous les jours de la période redeviennent des jours normaux ; les heures saisies sont conservées.",
+  "@vacationDeletePeriodMessage": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "vacationPeriodDeleted": "Vacances retirées ({count} jour(s))",
+  "@vacationPeriodDeleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

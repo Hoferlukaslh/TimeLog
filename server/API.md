@@ -16,7 +16,10 @@ Les erreurs renvoient `{"error": "<code>"}`.
 
 Codes d'erreur : `bad_request`, `too_large`, `invalid_email`, `weak_password` (8 à 72 caractères),
 `email_taken`, `invalid_credentials`, `too_many_attempts`, `unauthorized` (jeton absent / expiré),
-`server_error`, `database_unavailable`.
+`server_error`, `database_unavailable`, `server_unavailable` (NGINX ne joint pas l'API).
+
+L'API est servie à travers NGINX (`server/gateway/`), sur la même origine que la version web : elle
+n'envoie pas d'en-têtes CORS, et un site hébergé ailleurs ne peut donc pas l'appeler depuis un navigateur.
 
 ## Change
 

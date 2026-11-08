@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/repository.dart';
 import '../models/models.dart';
@@ -102,70 +103,77 @@ class _JournalFormState extends State<JournalForm> {
   @override
   Widget build(BuildContext context) {
     final l = context.l;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: InputDecorator(
-                decoration: InputDecoration(labelText: l.date, prefixIcon: const Icon(Icons.event)),
-                child: InkWell(
-                  onTap: () async {
-                    final d = await Pickers.date(context, _date);
-                    if (d != null) {
-                      setState(() => _date = Dates.dateOnly(d));
-                      widget.onDateChanged?.call(_date);
-                    }
-                  },
-                  child: Text(context.fmtDateShort(_date)),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () {
+          if (!_saving) _save();
+        },
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: InputDecorator(
+                  decoration: InputDecoration(labelText: l.date, prefixIcon: const Icon(Icons.event)),
+                  child: InkWell(
+                    onTap: () async {
+                      final d = await Pickers.date(context, _date);
+                      if (d != null) {
+                        setState(() => _date = Dates.dateOnly(d));
+                        widget.onDateChanged?.call(_date);
+                      }
+                    },
+                    child: Text(context.fmtDateShort(_date)),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _title,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(labelText: l.title, prefixIcon: const Icon(Icons.short_text)),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: CategoryDropdown(value: _categoryId, onChanged: (v) => setState(() => _categoryId = v)),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: '${l.duration} (${l.optional})',
-                  prefixIcon: const Icon(Icons.timer_outlined),
-                  suffixIcon: _duration == null
-                      ? null
-                      : IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _duration = null)),
-                ),
-                child: InkWell(
-                  onTap: () async {
-                    final m = await Pickers.duration(context, _duration, help: l.duration);
-                    if (m != null) setState(() => _duration = m);
-                  },
-                  child: Text(_duration == null ? l.noDuration : Fmt.duration(_duration!)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _title,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(labelText: l.title, prefixIcon: const Icon(Icons.short_text)),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: CategoryDropdown(value: _categoryId, onChanged: (v) => setState(() => _categoryId = v)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: '${l.duration} (${l.optional})',
+                    prefixIcon: const Icon(Icons.timer_outlined),
+                    suffixIcon: _duration == null
+                        ? null
+                        : IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _duration = null)),
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      final m = await Pickers.duration(context, _duration, help: l.duration);
+                      if (m != null) setState(() => _duration = m);
+                    },
+                    child: Text(_duration == null ? l.noDuration : Fmt.duration(_duration!)),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        MarkdownEditor(controller: _content, label: l.content),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          onPressed: _saving ? null : _save,
-          icon: const Icon(Icons.save),
-          label: Text(widget.clearAfterSave ? l.saveAndNew : l.save),
-        ),
-      ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          MarkdownEditor(controller: _content, label: l.content),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: _saving ? null : _save,
+            icon: const Icon(Icons.save),
+            label: Text(widget.clearAfterSave ? l.saveAndNew : l.save),
+          ),
+        ],
+      ),
     );
   }
 }

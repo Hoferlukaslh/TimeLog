@@ -75,6 +75,43 @@ class VacationService {
   Future<void> save(int year, double entitlement, double carryOver) =>
       _repo.saveVacationYear(year, entitlement, carryOver);
 
+  /// Entries of [entries] whose date is between [from] and [to] (both included).
+  static List<TimeEntry> entriesBetween(List<TimeEntry> entries, DateTime from, DateTime to) => [
+    for (final e in entries)
+      if (!e.date.isBefore(Dates.dateOnly(from)) && !e.date.isAfter(Dates.dateOnly(to))) e,
+  ];
+
+  /// The entry [e] once its absence is removed: back to a working day, times and
+  /// comment kept. Returns null when nothing is left, so the day can be deleted.
+  static TimeEntry? withoutAbsence(TimeEntry e) {
+    final cleared = e.copyWith(dayType: DayType.work, absencePart: AbsencePart.full, absenceMinutes: () => null);
+    final empty =
+        cleared.arrival == null &&
+        cleared.lunchStart == null &&
+        cleared.lunchEnd == null &&
+        cleared.departure == null &&
+        cleared.comment.isEmpty;
+    return empty ? null : cleared;
+  }
+
+  /// Removes the vacation of [entries] (one period, several days at once).
+  /// Only the absence is removed; clock times and comments are kept.
+  /// Returns the number of days changed.
+  Future<int> removeVacations(List<TimeEntry> entries) async {
+    var n = 0;
+    for (final e in entries) {
+      if (e.dayType != DayType.vacation) continue;
+      final cleared = withoutAbsence(e);
+      if (cleared == null) {
+        await _repo.deleteTimeEntry(e.date);
+      } else {
+        await _repo.saveTimeEntry(cleared);
+      }
+      n++;
+    }
+    return n;
+  }
+
   /// Formats a number of days: "12", "12.5", "0.75".
   static String fmt(double d) {
     if (d == d.roundToDouble()) return d.toInt().toString();

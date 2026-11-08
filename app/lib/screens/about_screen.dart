@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app_info.dart';
 import '../utils/ui.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/responsive.dart';
 
 class AboutScreen extends StatelessWidget {
   final Widget? drawer;
@@ -40,7 +41,7 @@ class AboutScreen extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: ListView(
+              child: CenteredListView(
                 padding: const EdgeInsets.all(24),
                 children: [
                   const Center(child: AppLogo(size: 112)),

@@ -7,6 +7,7 @@ import '../services/settings.dart';
 import '../services/vacation_service.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
+import '../widgets/responsive.dart';
 import 'categories_screen.dart';
 import 'export_screen.dart';
 import 'sync_screen.dart';
@@ -67,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       drawer: drawer,
       appBar: AppBar(title: Text(l.menuSettings)),
-      body: ListView(
+      body: CenteredListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
           header(l.sectionAppearance),

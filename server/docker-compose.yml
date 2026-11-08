@@ -1,9 +1,10 @@
 name: timelog
 
-# TimeLog synchronization server: MariaDB + API (Go).
+# TimeLog synchronization server: MariaDB + API (Go) + NGINX (single entry point).
 #   cp .env.example .env   # then change the passwords
 #   docker compose up -d --build
-# The API listens on http://<this machine>:${TIMELOG_PORT:-8787}
+# Everything is on http://<this machine>:${TIMELOG_PORT:-8787}: the API under
+# /api/ and, with WEB_ENABLED=true in .env, the web application under /.
 # Put it behind a reverse proxy with HTTPS for use over the Internet (see README.md).
 services:
   db:
@@ -35,8 +36,26 @@ services:
       LISTEN_ADDR: ":8080"
       SESSION_DAYS: ${SESSION_DAYS:-180}
       MAX_BODY_MB: ${MAX_BODY_MB:-256}
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: server/gateway/Dockerfile
+      args:
+        WEB_ENABLED: ${WEB_ENABLED:-false}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      WEB_ENABLED: ${WEB_ENABLED:-false}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
     ports:
       - "${TIMELOG_PORT:-8787}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/gateway-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   db-data:

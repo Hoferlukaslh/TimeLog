@@ -1,11 +1,8 @@
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart' show sqfliteFfiInit, databaseFactoryFfi;
 
+import '../platform/platform.dart';
 import '../sync/sync_schema.dart';
 
 /// Single access point to the SQLite database.
@@ -32,22 +29,8 @@ class AppDatabase {
 
   Future<void> open({String? overridePath}) async {
     if (_db != null) return;
-    if (!Platform.isAndroid && !Platform.isIOS) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
-    String path;
-    if (overridePath != null) {
-      path = overridePath;
-    } else if (Platform.isAndroid || Platform.isIOS) {
-      path = p.join(await getDatabasesPath(), 'timelog.db');
-    } else {
-      // Desktop: ~/.local/share/<app id>/ on Linux.
-      final dir = await getApplicationSupportDirectory();
-      await dir.create(recursive: true);
-      path = p.join(dir.path, 'timelog.db');
-    }
-    _db = await openFile(path);
+    prepareDatabaseFactory();
+    _db = await openFile(overridePath ?? await defaultDatabasePath());
   }
 
   /// Opens (creating / migrating if needed) a TimeLog database file.

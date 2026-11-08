@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import '../sync/http_sync_backend.dart';
 import '../sync/sync_controller.dart';
 import '../sync/sync_models.dart';
 import '../utils/ui.dart';
+import '../widgets/responsive.dart';
 
 /// Localized message of a synchronization error.
 String syncErrorMessage(BuildContext context, Object? error) {
@@ -37,7 +39,8 @@ class SyncScreen extends StatelessWidget {
     return Scaffold(
       drawer: drawer,
       appBar: AppBar(title: Text(l.menuSync)),
-      body: ListView(
+      body: CenteredListView(
+        maxWidth: 640,
         padding: const EdgeInsets.all(16),
         children: [
           Row(
@@ -75,7 +78,8 @@ class _LoginFormState extends State<_LoginForm> {
   void initState() {
     super.initState();
     final sync = context.read<SyncController>();
-    _server.text = sync.serverUrl ?? '';
+    // In the browser the API is served by the same address as the application.
+    _server.text = kIsWeb ? Uri.base.origin : sync.serverUrl ?? '';
     _email.text = sync.email ?? '';
     final e = sync.lastError;
     if (e is SyncAuthException && e.sessionExpired) {
@@ -118,17 +122,18 @@ class _LoginFormState extends State<_LoginForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextField(
-            controller: _server,
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-            decoration: InputDecoration(
-              labelText: l.syncServer,
-              hintText: l.syncServerHint,
-              prefixIcon: const Icon(Icons.dns_outlined),
+          if (!kIsWeb)
+            TextField(
+              controller: _server,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: l.syncServer,
+                hintText: l.syncServerHint,
+                prefixIcon: const Icon(Icons.dns_outlined),
+              ),
+              onChanged: (_) => setState(() {}),
             ),
-            onChanged: (_) => setState(() {}),
-          ),
           if (insecure)
             Padding(
               padding: const EdgeInsets.only(top: 8),

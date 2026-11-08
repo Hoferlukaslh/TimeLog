@@ -1,0 +1,10 @@
+# Only what the image needs (the build context is the root of the repository).
+*
+!server/gateway/configure.sh
+!app/pubspec.yaml
+!app/pubspec.lock
+!app/l10n.yaml
+!app/analysis_options.yaml
+!app/assets
+!app/lib
+!app/web

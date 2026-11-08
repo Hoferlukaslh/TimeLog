@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import '../platform/platform.dart';
 import '../utils/ui.dart';
 
 /// Result of an audio recording.
@@ -51,12 +49,13 @@ class _AudioRecorderScreenState extends State<AudioRecorderScreen> {
       }
       var encoder = AudioEncoder.aacLc;
       if (!await _rec.isEncoderSupported(encoder)) {
-        encoder = AudioEncoder.wav;
-        _ext = 'wav';
-        _mime = 'audio/wav';
+        // Browsers without AAC (Firefox) record Opus; WAV works everywhere but is big.
+        final opus = kIsWeb && await _rec.isEncoderSupported(AudioEncoder.opus);
+        encoder = opus ? AudioEncoder.opus : AudioEncoder.wav;
+        _ext = opus ? 'webm' : 'wav';
+        _mime = opus ? 'audio/webm' : 'audio/wav';
       }
-      final dir = await getTemporaryDirectory();
-      _path = p.join(dir.path, 'rec_${DateTime.now().millisecondsSinceEpoch}.$_ext');
+      _path = await newRecordingPath(_ext);
       await _rec.start(RecordConfig(encoder: encoder, numChannels: 1), path: _path!);
       _elapsed = Duration.zero;
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -73,13 +72,7 @@ class _AudioRecorderScreenState extends State<AudioRecorderScreen> {
     final path = await _rec.stop() ?? _path;
     setState(() => _recording = false);
     if (path == null) return;
-    final f = File(path);
-    // Give the encoder a moment to flush the file.
-    for (var i = 0; i < 10 && !await f.exists(); i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    }
-    final bytes = await f.readAsBytes();
-    await f.delete().catchError((_) => f);
+    final bytes = await takeRecording(path);
     if (mounted) Navigator.pop(context, AudioResult(bytes, _ext, _mime));
   }
 

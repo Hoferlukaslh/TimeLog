@@ -8,7 +8,7 @@
 Simple, hors ligne, et vos données restent à vous.
 
 [![Licence : GPL v3](https://img.shields.io/badge/licence-GPLv3-blue.svg)](LICENSE)
-![Flutter](https://img.shields.io/badge/Flutter-Android%20%7C%20Linux-02569B?logo=flutter)
+![Flutter](https://img.shields.io/badge/Flutter-Android%20%7C%20Linux%20%7C%20Windows%20%7C%20Web-02569B?logo=flutter)
 ![Langues](https://img.shields.io/badge/langues-FR%20%7C%20DE%20%7C%20IT%20%7C%20EN-success)
 
 </div>
@@ -30,7 +30,8 @@ vous avez fait et retrouvez n'importe quelle note en quelques secondes.
   demi-journées, maladie, jours fériés.
 - **Tout en un** : heures, journal de travail, notes, photos, audio, dessins et documents.
 - **Hors ligne d'abord** : tout fonctionne sans réseau, dans une base SQLite sur l'appareil.
-- **Synchronisation optionnelle** entre téléphone et ordinateur, sur **votre propre serveur**.
+- **Partout** : téléphone Android, ordinateur Linux ou Windows, et navigateur web.
+- **Synchronisation optionnelle** entre tous ces appareils, sur **votre propre serveur**.
 - **Libre et sans publicité** : code source ouvert sous licence GPL v3, aucun pistage.
 
 ## Fonctionnalités
@@ -46,6 +47,8 @@ vous avez fait et retrouvez n'importe quelle note en quelques secondes.
 - Vacances, maladie / accident, jour férié, récupération : journée entière, matin,
   après-midi ou durée personnalisée (ex. malade à partir de 10 h).
 - Absence sur plusieurs jours en une fois (seuls les jours travaillés sont comptés).
+- Supprimer des vacances sur plusieurs jours d'un seul coup : bouton 🗑️ sur la période
+  dans la liste (plus besoin de passer jour par jour). Les heures saisies sont conservées.
 - Droit annuel de vacances, report de l'année précédente en un clic, jours pris,
   planifiés et restants. Le solde restant s'affiche avant de valider une demande.
 
@@ -79,6 +82,19 @@ vous avez fait et retrouvez n'importe quelle note en quelques secondes.
 - **Toutes** les données en JSON (un fichier, restaurable) ou en CSV (archive ZIP avec un
   fichier par table et les pièces jointes).
 
+### 💻 Sur ordinateur et navigateur
+- Interface adaptée aux grands écrans : menu toujours visible, heures et journal sur deux
+  colonnes, notes en grille, aperçu Markdown en direct à côté du texte.
+- Heures saisies au clavier plutôt qu'au cadran.
+- Raccourcis clavier :
+
+| Raccourci | Action |
+|---|---|
+| `Ctrl+1` … `Ctrl+9` | changer de section, dans l'ordre du menu (applications Linux et Windows) |
+| `Ctrl+S` | enregistrer une note, une entrée de journal ou un dessin |
+| `Ctrl+B` / `Ctrl+I` | gras / italique dans l'éditeur de texte |
+| `Ctrl+Z` / `Ctrl+Y` | annuler / rétablir dans un dessin |
+
 ### 🎨 Personnalisation
 - Thème clair, sombre ou système, couleur d'accent au choix (appliquée aussi au widget).
 - Français, allemand, italien et anglais ; format 24 h ou 12 h ; premier jour de la semaine.
@@ -101,7 +117,29 @@ flutter build linux --release
 linux/install-desktop-entry.sh   # ajoute TimeLog au menu des applications
 ```
 
-Dépendances système : `libsqlite3`, GStreamer, et `parecord` ou `ffmpeg` pour l'audio.
+Dépendances système : GStreamer, et `parecord` ou `ffmpeg` pour l'audio
+(SQLite est inclus dans l'application).
+
+### Windows
+À compiler **sur un PC Windows**, avec Flutter et Visual Studio 2022 (charge de travail
+« Développement Desktop en C++ ») :
+
+```powershell
+cd app
+flutter build windows --release
+# build\windows\x64\runner\Release\ : copier tout ce dossier, lancer timelog.exe
+```
+
+Les données sont dans `%APPDATA%\ch.lukas\TimeLog\`.
+
+### Navigateur web
+La version web est servie par le serveur de synchronisation : voir ci-dessous, avec
+`WEB_ENABLED=true`, puis ouvrir l'adresse du serveur dans un navigateur.
+
+- Les données sont gardées **dans ce navigateur** (IndexedDB) et synchronisées avec votre compte.
+  Connectez-vous à votre compte pour les retrouver, et ne pas dépendre du cache du navigateur.
+- Le microphone exige une adresse en **HTTPS** (ou `localhost`).
+- Pas d'appareil photo direct ni de widget : photos et documents s'importent depuis des fichiers.
 
 ### Serveur de synchronisation (facultatif)
 ```bash
@@ -111,14 +149,15 @@ docker compose up -d --build
 ```
 
 Puis, dans l'application : menu **Synchronisation** → adresse du serveur, e-mail et mot de passe.
+Avec `WEB_ENABLED=true` dans `.env`, le serveur propose aussi la version web à la même adresse.
 Détails, HTTPS et sécurité : [server/README.md](server/README.md).
 
 ## Organisation du dépôt
 
 | Dossier | Contenu |
 |---|---|
-| [app/](app) | application Flutter (Android, Linux) et widget Android natif |
-| [server/](server) | serveur de synchronisation Go + MariaDB (Docker) |
+| [app/](app) | application Flutter (Android, Linux, Windows, Web) et widget Android natif |
+| [server/](server) | serveur de synchronisation Go + MariaDB, passerelle NGINX et version web (Docker) |
 | [docs/](docs) | documentation technique |
 
 ## Documentation

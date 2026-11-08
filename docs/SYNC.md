@@ -1,6 +1,7 @@
 # Synchronisation (hors ligne d'abord)
 
-TimeLog fonctionne toujours sur sa base **SQLite locale**. La synchronisation est une option :
+TimeLog fonctionne toujours sur sa base **SQLite locale** (dans le navigateur pour la version web :
+SQLite WebAssembly, stocké dans IndexedDB). La synchronisation est une option :
 une fois connecté à un compte (menu *Synchronisation*), l'application échange ses modifications
 avec le serveur ([server/](../server)) dès qu'il est joignable.
 
@@ -56,4 +57,6 @@ Les pointages faits avec le widget Android, application fermée, sont envoyés �
 - Les dates de modification viennent de l'horloge des appareils : des horloges très décalées peuvent
   donner la victoire à la mauvaise modification en cas de conflit sur la même colonne.
 - Pas de synchronisation en arrière-plan quand l'application est fermée (prochaine ouverture).
+- Version web : chaque navigateur est un appareil distinct, avec sa propre copie des données ; vider
+  les données du site supprime les modifications qui n'ont pas encore été envoyées.
 - Les pièces jointes sont transférées entières à chaque modification de leur contenu.

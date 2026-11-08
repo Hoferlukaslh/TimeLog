@@ -7,18 +7,18 @@ import 'package:provider/provider.dart';
 
 import 'data/database.dart';
 import 'l10n/gen/app_localizations.dart';
+import 'platform/platform.dart';
 import 'screens/home_shell.dart';
 import 'services/categories_store.dart';
 import 'services/settings.dart';
 import 'services/widget_sync.dart';
 import 'sync/sync_controller.dart';
-import 'utils/ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting();
   await AppDatabase.instance.open();
-  unawaited(Files.clearTemp());
+  unawaited(clearTempFiles());
   final settings = AppSettings();
   await settings.load();
   final categories = CategoriesStore();

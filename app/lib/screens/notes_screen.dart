@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +11,12 @@ import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/attachment_views.dart';
 import '../widgets/common.dart';
+import '../widgets/responsive.dart';
 import 'note_editor_screen.dart';
 
 class NotesScreen extends StatefulWidget {
-  final Widget drawer;
-  const NotesScreen({super.key, required this.drawer});
+  final Widget? drawer;
+  const NotesScreen({super.key, this.drawer});
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -29,6 +31,9 @@ class _NotesScreenState extends State<NotesScreen> {
   List<Note> _notes = [];
 
   bool get _searching => _search.text.trim().isNotEmpty;
+
+  /// Room for three columns of notes.
+  static const _maxWidth = 1200.0;
 
   @override
   void initState() {
@@ -113,50 +118,57 @@ class _NotesScreenState extends State<NotesScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _load,
-        child: ListView(
+        child: CenteredListView(
+          maxWidth: _maxWidth,
           padding: const EdgeInsets.only(bottom: 88),
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-              child: SearchBar(
-                controller: _search,
-                hintText: l.searchNotesHint,
-                leading: const Icon(Icons.search),
-                trailing: [
-                  if (_searching)
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () {
-                        _search.clear();
-                        _load();
-                      },
-                    ),
-                ],
-                onChanged: (_) {
-                  _debounce?.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 300), _load);
-                  setState(() {});
-                },
+              child: CenteredBox(
+                child: SearchBar(
+                  controller: _search,
+                  hintText: l.searchNotesHint,
+                  leading: const Icon(Icons.search),
+                  trailing: [
+                    if (_searching)
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          _search.clear();
+                          _load();
+                        },
+                      ),
+                  ],
+                  onChanged: (_) {
+                    _debounce?.cancel();
+                    _debounce = Timer(const Duration(milliseconds: 300), _load);
+                    setState(() {});
+                  },
+                ),
               ),
             ),
             if (!_searching)
-              PeriodSelector(
-                period: _period,
-                onChanged: (p) {
-                  setState(() => _period = p);
-                  _load();
-                },
+              CenteredBox(
+                child: PeriodSelector(
+                  period: _period,
+                  onChanged: (p) {
+                    setState(() => _period = p);
+                    _load();
+                  },
+                ),
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-              child: CategoryDropdown(
-                value: _filterCategory,
-                allLabel: l.allCategories,
-                dense: true,
-                onChanged: (v) {
-                  setState(() => _filterCategory = v);
-                  _load();
-                },
+              child: CenteredBox(
+                child: CategoryDropdown(
+                  value: _filterCategory,
+                  allLabel: l.allCategories,
+                  dense: true,
+                  onChanged: (v) {
+                    setState(() => _filterCategory = v);
+                    _load();
+                  },
+                ),
               ),
             ),
             if (_notes.isEmpty)
@@ -164,18 +176,34 @@ class _NotesScreenState extends State<NotesScreen> {
                 icon: _searching ? Icons.search_off : Icons.sticky_note_2_outlined,
                 text: _searching ? l.noResults : l.nothingHere,
               ),
-            ..._grouped(),
+            LayoutBuilder(
+              builder: (context, c) {
+                final columns = Responsive.twoColumns(context, c.maxWidth) ? (c.maxWidth / 380).floor().clamp(2, 3) : 1;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: _grouped(columns == 1 ? null : c.maxWidth / columns),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  List<Widget> _grouped() {
+  /// Notes grouped by day. [cardWidth]: side by side, null: one under the other.
+  List<Widget> _grouped(double? cardWidth) {
     final out = <Widget>[];
+    var day = <Widget>[];
+    void endOfDay() {
+      if (cardWidth != null && day.isNotEmpty) out.add(Wrap(children: day));
+      day = [];
+    }
+
     DateTime? last;
     for (final n in _notes) {
       if (last == null || !Dates.sameDay(last, n.date)) {
+        endOfDay();
         last = n.date;
         out.add(
           Padding(
@@ -187,13 +215,17 @@ class _NotesScreenState extends State<NotesScreen> {
           ),
         );
       }
-      out.add(
-        _NoteCard(
-          note: n,
-          onTap: () => _open(note: n),
-        ),
+      final card = _NoteCard(
+        note: n,
+        onTap: () => _open(note: n),
       );
+      if (cardWidth == null) {
+        out.add(card);
+      } else {
+        day.add(SizedBox(width: cardWidth, child: card));
+      }
     }
+    endOfDay();
     return out;
   }
 }
@@ -239,18 +271,23 @@ class _NoteCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 56,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final a in note.attachments)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: Tooltip(
-                            message: a.fileName,
-                            child: AttachmentThumb(attachment: a, size: 56),
+                  child: ScrollConfiguration(
+                    // A mouse has no horizontal wheel: the row can be dragged.
+                    behavior: ScrollConfiguration.of(context)
+                        .copyWith(dragDevices: {...PointerDeviceKind.values}, scrollbars: false),
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        for (final a in note.attachments)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: Tooltip(
+                              message: a.fileName,
+                              child: AttachmentThumb(attachment: a, size: 56),
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],

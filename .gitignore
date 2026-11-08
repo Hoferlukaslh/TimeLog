@@ -55,3 +55,7 @@ Thumbs.db
 # --- Divers ---
 *.log
 .claude/
+
+# --- Paquets d'installation ---
+packaging/build/
+packaging/dist/

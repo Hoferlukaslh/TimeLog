@@ -9,10 +9,11 @@ import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/common.dart';
 import '../widgets/journal_form.dart';
+import '../widgets/responsive.dart';
 
 class JournalScreen extends StatefulWidget {
-  final Widget drawer;
-  const JournalScreen({super.key, required this.drawer});
+  final Widget? drawer;
+  const JournalScreen({super.key, this.drawer});
 
   @override
   State<JournalScreen> createState() => _JournalScreenState();
@@ -26,6 +27,7 @@ class _JournalScreenState extends State<JournalScreen> {
   int? _filterCategory;
   List<JournalEntry> _entries = [];
   List<JournalEntry> _dayEntries = [];
+  final _addFormKey = GlobalKey();
 
   @override
   void initState() {
@@ -68,10 +70,13 @@ class _JournalScreenState extends State<JournalScreen> {
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: JournalForm(
-              entry: e,
-              initialDate: _period.contains(Dates.today()) ? Dates.today() : _period.start,
-              onSaved: (_) => Navigator.pop(ctx),
+            child: CenteredBox(
+              maxWidth: 900,
+              child: JournalForm(
+                entry: e,
+                initialDate: _period.contains(Dates.today()) ? Dates.today() : _period.start,
+                onSaved: (_) => Navigator.pop(ctx),
+              ),
             ),
           ),
         ),
@@ -91,19 +96,21 @@ class _JournalScreenState extends State<JournalScreen> {
           preferredSize: const Size.fromHeight(56),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-            child: SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<bool>(
-                segments: [
-                  ButtonSegment(value: true, icon: const Icon(Icons.edit_note), label: Text(l.journalModeAdd)),
-                  ButtonSegment(
-                    value: false,
-                    icon: const Icon(Icons.visibility_outlined),
-                    label: Text(l.journalModeView),
-                  ),
-                ],
-                selected: {_addMode},
-                onSelectionChanged: (s) => setState(() => _addMode = s.first),
+            child: CenteredBox(
+              child: SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: true, icon: const Icon(Icons.edit_note), label: Text(l.journalModeAdd)),
+                    ButtonSegment(
+                      value: false,
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: Text(l.journalModeView),
+                    ),
+                  ],
+                  selected: {_addMode},
+                  onSelectionChanged: (s) => setState(() => _addMode = s.first),
+                ),
               ),
             ),
           ),
@@ -118,26 +125,46 @@ class _JournalScreenState extends State<JournalScreen> {
 
   Widget _buildAdd() {
     final l = context.l;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(l.newEntry, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
-        JournalForm(
-          initialDate: _addDate,
-          clearAfterSave: true,
-          onDateChanged: (d) {
-            _addDate = d;
-            _load();
-          },
-          onSaved: (_) => _load(),
-        ),
-        const SizedBox(height: 24),
-        Text('${l.entriesOfDay} · ${context.fmtDateShort(_addDate)}', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        if (_dayEntries.isEmpty) EmptyState(icon: Icons.menu_book, text: l.nothingHere),
-        for (final e in _dayEntries) _EntryCard(entry: e, onTap: () => _edit(e)),
-      ],
+    final form = [
+      Text(l.newEntry, style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 12),
+      JournalForm(
+        // The text being typed survives a change of layout (window resized).
+        key: _addFormKey,
+        initialDate: _addDate,
+        clearAfterSave: true,
+        onDateChanged: (d) {
+          _addDate = d;
+          _load();
+        },
+        onSaved: (_) => _load(),
+      ),
+    ];
+    final day = [
+      Text('${l.entriesOfDay} · ${context.fmtDateShort(_addDate)}', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 8),
+      if (_dayEntries.isEmpty) EmptyState(icon: Icons.menu_book, text: l.nothingHere),
+      for (final e in _dayEntries) _EntryCard(entry: e, onTap: () => _edit(e)),
+    ];
+    return LayoutBuilder(
+      builder: (context, c) {
+        const padding = EdgeInsets.all(16);
+        if (!Responsive.twoColumns(context, c.maxWidth)) {
+          return ListView(padding: padding, children: [...form, const SizedBox(height: 24), ...day]);
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView(padding: padding, children: form),
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(
+              child: ListView(padding: padding, children: day),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -147,7 +174,7 @@ class _JournalScreenState extends State<JournalScreen> {
     final total = list.fold<int>(0, (s, e) => s + (e.durationMinutes ?? 0));
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
+      child: CenteredListView(
         padding: const EdgeInsets.only(bottom: 88),
         children: [
           PeriodSelector(

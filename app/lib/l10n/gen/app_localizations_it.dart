@@ -732,4 +732,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get licenses => 'Licenze';
+
+  @override
+  String get vacationDeletePeriod => 'Elimina periodo';
+
+  @override
+  String vacationDeletePeriodMessage(String from, String to) {
+    return 'Rimuovere le ferie dal $from al $to? Tutti i giorni del periodo tornano giorni lavorativi normali; le ore già inserite vengono conservate.';
+  }
+
+  @override
+  String vacationPeriodDeleted(int count) {
+    return 'Ferie rimosse ($count giorno/i)';
+  }
 }

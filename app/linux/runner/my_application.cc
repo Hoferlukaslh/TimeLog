@@ -52,7 +52,8 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "TimeLog");
   }
 
-  gtk_window_set_default_size(window, 480, 860);
+  gtk_window_set_default_size(window, 1180, 780);
+  gtk_widget_set_size_request(GTK_WIDGET(window), 400, 560);
 
   // Window icon (X11; on Wayland the icon comes from the .desktop entry,
   // see linux/install-desktop-entry.sh).

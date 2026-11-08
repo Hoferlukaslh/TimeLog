@@ -333,5 +333,19 @@
       }
     }
   },
-  "licenses": "Licenses"
+  "licenses": "Licenses",
+  "vacationDeletePeriod": "Delete period",
+  "vacationDeletePeriodMessage": "Remove the vacation from {from} to {to}? All days of the period become normal working days; times already entered are kept.",
+  "@vacationDeletePeriodMessage": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "vacationPeriodDeleted": "Vacation removed ({count} day(s))",
+  "@vacationPeriodDeleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

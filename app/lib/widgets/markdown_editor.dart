@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import '../utils/ui.dart';
+import 'responsive.dart';
 
-/// Text field with a small Markdown toolbar and a preview tab.
+/// Text field with a small Markdown toolbar and a preview: in a tab, or live
+/// next to the text when there is enough room.
 class MarkdownEditor extends StatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -52,50 +55,43 @@ class _MarkdownEditorState extends State<MarkdownEditor> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _previewBox() {
+    return Container(
+      constraints: BoxConstraints(minHeight: widget.minLines * 20.0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: ListenableBuilder(
+        listenable: widget.controller,
+        builder: (_, _) => MarkdownBody(data: widget.controller.text, selectable: true),
+      ),
+    );
+  }
+
+  Widget _writer() {
     final l = context.l;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
+        Wrap(
           children: [
-            Expanded(
-              child: SegmentedButton<bool>(
-                segments: [
-                  ButtonSegment(value: false, icon: const Icon(Icons.edit), label: Text(l.write)),
-                  ButtonSegment(value: true, icon: const Icon(Icons.visibility), label: Text(l.preview)),
-                ],
-                selected: {_preview},
-                onSelectionChanged: (s) => setState(() => _preview = s.first),
-              ),
-            ),
+            IconButton(icon: const Icon(Icons.format_bold), onPressed: () => _wrap('**')),
+            IconButton(icon: const Icon(Icons.format_italic), onPressed: () => _wrap('*')),
+            IconButton(icon: const Icon(Icons.title), onPressed: () => _linePrefix('## ')),
+            IconButton(icon: const Icon(Icons.format_list_bulleted), onPressed: () => _linePrefix('- ')),
+            IconButton(icon: const Icon(Icons.format_list_numbered), onPressed: () => _linePrefix('1. ')),
+            IconButton(icon: const Icon(Icons.check_box_outlined), onPressed: () => _linePrefix('- [ ] ')),
+            IconButton(icon: const Icon(Icons.code), onPressed: () => _wrap('`')),
           ],
         ),
-        const SizedBox(height: 8),
-        if (_preview)
-          Container(
-            constraints: BoxConstraints(minHeight: widget.minLines * 20.0),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).colorScheme.outline),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: MarkdownBody(data: widget.controller.text, selectable: true),
-          )
-        else ...[
-          Wrap(
-            children: [
-              IconButton(icon: const Icon(Icons.format_bold), onPressed: () => _wrap('**')),
-              IconButton(icon: const Icon(Icons.format_italic), onPressed: () => _wrap('*')),
-              IconButton(icon: const Icon(Icons.title), onPressed: () => _linePrefix('## ')),
-              IconButton(icon: const Icon(Icons.format_list_bulleted), onPressed: () => _linePrefix('- ')),
-              IconButton(icon: const Icon(Icons.format_list_numbered), onPressed: () => _linePrefix('1. ')),
-              IconButton(icon: const Icon(Icons.check_box_outlined), onPressed: () => _linePrefix('- [ ] ')),
-              IconButton(icon: const Icon(Icons.code), onPressed: () => _wrap('`')),
-            ],
-          ),
-          TextField(
+        CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.keyB, control: true): () => _wrap('**'),
+            const SingleActivator(LogicalKeyboardKey.keyI, control: true): () => _wrap('*'),
+          },
+          child: TextField(
             controller: widget.controller,
             minLines: widget.minLines,
             maxLines: null,
@@ -107,8 +103,50 @@ class _MarkdownEditorState extends State<MarkdownEditor> {
               alignLabelWithHint: true,
             ),
           ),
-        ],
+        ),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l;
+    return LayoutBuilder(
+      builder: (context, c) {
+        if (Responsive.twoColumns(context, c.maxWidth)) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _writer()),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(padding: const EdgeInsets.only(top: 48), child: _previewBox()),
+              ),
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: SegmentedButton<bool>(
+                    segments: [
+                      ButtonSegment(value: false, icon: const Icon(Icons.edit), label: Text(l.write)),
+                      ButtonSegment(value: true, icon: const Icon(Icons.visibility), label: Text(l.preview)),
+                    ],
+                    selected: {_preview},
+                    onSelectionChanged: (s) => setState(() => _preview = s.first),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_preview) _previewBox() else _writer(),
+          ],
+        );
+      },
     );
   }
 }
