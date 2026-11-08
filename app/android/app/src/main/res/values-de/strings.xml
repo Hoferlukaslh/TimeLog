@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">Mit einem Tipp stempeln, ohne die App zu öffnen</string>
+    <string name="w_arrival">Ankunft</string>
+    <string name="w_lunch_start">Pause</string>
+    <string name="w_lunch_end">Zurück</string>
+    <string name="w_departure">Feierabend</string>
+    <string name="w_punch_arrival">Ankunft stempeln</string>
+    <string name="w_punch_lunch_start">Mittagspause stempeln</string>
+    <string name="w_punch_lunch_end">Rückkehr stempeln</string>
+    <string name="w_punch_departure">Feierabend stempeln</string>
+    <string name="w_day_done">Tag abgeschlossen ✓</string>
+    <string name="w_worked">Gearbeitet %1$s</string>
+    <string name="w_punched">%1$s: %2$s</string>
+    <string name="w_same_minute">Bereits um %1$s gestempelt</string>
+    <string name="w_before_previous">Heute ist bereits eine spätere Zeit erfasst. Bitte in der App korrigieren.</string>
+    <string name="w_open_app">TimeLog einmal öffnen</string>
+    <string name="w_vacation">Ferien</string>
+    <string name="w_sick">Krankheit</string>
+    <string name="w_holiday">Feiertag</string>
+    <string name="w_compensation">Kompensation</string>
+    <string name="w_full_day">ganzer Tag</string>
+</resources>

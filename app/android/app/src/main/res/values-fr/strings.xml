@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">Timbrer en un geste, sans ouvrir l\'app</string>
+    <string name="w_arrival">Arrivée</string>
+    <string name="w_lunch_start">Pause</string>
+    <string name="w_lunch_end">Reprise</string>
+    <string name="w_departure">Départ</string>
+    <string name="w_punch_arrival">Timbrer l\'arrivée</string>
+    <string name="w_punch_lunch_start">Timbrer la pause midi</string>
+    <string name="w_punch_lunch_end">Timbrer la reprise</string>
+    <string name="w_punch_departure">Timbrer le départ</string>
+    <string name="w_day_done">Journée terminée ✓</string>
+    <string name="w_worked">Travaillé %1$s</string>
+    <string name="w_punched">%1$s : %2$s</string>
+    <string name="w_same_minute">Déjà timbré à %1$s</string>
+    <string name="w_before_previous">Une heure plus tardive est déjà saisie aujourd\'hui. Corrigez dans l\'app.</string>
+    <string name="w_open_app">Ouvrez TimeLog une première fois</string>
+    <string name="w_vacation">Vacances</string>
+    <string name="w_sick">Maladie</string>
+    <string name="w_holiday">Jour férié</string>
+    <string name="w_compensation">Récupération</string>
+    <string name="w_full_day">journée entière</string>
+</resources>

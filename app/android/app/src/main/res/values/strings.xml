@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">TimeLog</string>
+    <string name="w_no_time" translatable="false">--:--</string>
+    <string name="widget_description">Clock in with one tap, without opening the app</string>
+    <string name="w_arrival">Arrival</string>
+    <string name="w_lunch_start">Lunch</string>
+    <string name="w_lunch_end">Back</string>
+    <string name="w_departure">Departure</string>
+    <string name="w_punch_arrival">Clock arrival</string>
+    <string name="w_punch_lunch_start">Clock lunch break</string>
+    <string name="w_punch_lunch_end">Clock back from lunch</string>
+    <string name="w_punch_departure">Clock departure</string>
+    <string name="w_day_done">Day complete ✓</string>
+    <string name="w_worked">Worked %1$s</string>
+    <string name="w_punched">%1$s: %2$s</string>
+    <string name="w_same_minute">Already clocked at %1$s</string>
+    <string name="w_before_previous">A later time is already entered today. Fix it in the app.</string>
+    <string name="w_open_app">Open TimeLog once to start</string>
+    <string name="w_vacation">Vacation</string>
+    <string name="w_sick">Sick</string>
+    <string name="w_holiday">Public holiday</string>
+    <string name="w_compensation">Compensation</string>
+    <string name="w_full_day">whole day</string>
+</resources>

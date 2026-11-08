@@ -1,0 +1,337 @@
+{
+  "@@locale": "en",
+  "languageName": "English",
+  "appTitle": "TimeLog",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "close": "Close",
+  "ok": "OK",
+  "today": "Today",
+  "optional": "optional",
+  "deleteConfirmTitle": "Delete?",
+  "deleteConfirmMessage": "This action cannot be undone.",
+  "saved": "Saved",
+  "errorMessage": "Error: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "nothingHere": "Nothing here yet",
+  "untitled": "Untitled",
+  "periodDay": "Day",
+  "periodWeek": "Week",
+  "periodMonth": "Month",
+  "periodYear": "Year",
+  "weekNumber": "Week {number}",
+  "@weekNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "menuHours": "Hours",
+  "menuJournal": "Work journal",
+  "menuNotes": "Notes",
+  "menuCategories": "Categories",
+  "menuSettings": "Settings",
+  "menuExport": "Export / backup",
+  "menuAbout": "About",
+  "arrival": "Arrival",
+  "lunchStart": "Lunch break start",
+  "lunchEnd": "Lunch break end",
+  "departure": "Departure",
+  "morning": "Morning",
+  "afternoon": "Afternoon",
+  "lunchBreak": "Lunch break",
+  "worked": "Worked",
+  "target": "Target",
+  "balance": "Balance",
+  "totalBalance": "Overall balance",
+  "clockIn": "Clock in",
+  "dayComplete": "Day complete",
+  "dayType": "Day type",
+  "dayTypeWork": "Work",
+  "dayTypeVacation": "Vacation",
+  "dayTypeSick": "Sick / accident",
+  "dayTypeHoliday": "Public holiday",
+  "dayTypeCompensation": "Overtime compensation",
+  "comment": "Comment",
+  "clearTime": "Clear",
+  "noEntry": "No entry",
+  "deleteDay": "Delete this day",
+  "timeOrderError": "Times must be in chronological order.",
+  "daysWorked": "Days worked",
+  "tapToSet": "Tap to set",
+  "journalModeAdd": "Add",
+  "journalModeView": "Browse",
+  "newEntry": "New entry",
+  "editEntry": "Edit entry",
+  "title": "Title",
+  "content": "Content",
+  "markdownHint": "Markdown supported: **bold**, *italic*, # title, - list",
+  "duration": "Time spent",
+  "noDuration": "Not specified",
+  "category": "Category",
+  "noCategory": "No category",
+  "allCategories": "All categories",
+  "date": "Date",
+  "write": "Write",
+  "preview": "Preview",
+  "totalDuration": "Total time: {duration}",
+  "@totalDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "entriesOfDay": "Entries of the day",
+  "saveAndNew": "Save and add another",
+  "entryAdded": "Entry added",
+  "titleOrContentRequired": "Please enter a title or a content.",
+  "newNote": "New note",
+  "editNote": "Note",
+  "noteText": "Text",
+  "addPhoto": "Photo",
+  "takePhoto": "Take a photo",
+  "choosePhoto": "Choose an image",
+  "addAudio": "Audio",
+  "addDrawing": "Drawing",
+  "addDocument": "Document",
+  "attachments": "Attachments",
+  "searchNotesHint": "Search text, title, file, category…",
+  "recording": "Recording…",
+  "audioRecorder": "Audio recording",
+  "startRecording": "Start recording",
+  "stopRecording": "Stop and save",
+  "micPermissionDenied": "Microphone access was refused.",
+  "drawingTitle": "Drawing",
+  "undo": "Undo",
+  "clearDrawing": "Clear all",
+  "eraser": "Eraser",
+  "open": "Open",
+  "rename": "Rename",
+  "fileName": "File name",
+  "saveToDevice": "Save a copy",
+  "play": "Play",
+  "pause": "Pause",
+  "noResults": "No results",
+  "cannotOpenFile": "This file cannot be opened: {message}",
+  "@cannotOpenFile": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryName": "Name",
+  "categoryColor": "Color",
+  "newCategory": "New category",
+  "editCategory": "Edit category",
+  "noCategories": "No categories yet. Create one with the + button.",
+  "categoryDeleteMessage": "Entries and notes using this category will be kept, without category.",
+  "nameRequired": "Please enter a name.",
+  "manageCategories": "Manage categories",
+  "sectionAppearance": "Appearance",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "accentColor": "Accent color",
+  "sectionGeneral": "General",
+  "language": "Language",
+  "languageSystem": "System language",
+  "firstDayOfWeek": "First day of the week",
+  "timeFormat": "Time format",
+  "format24h": "24 hours",
+  "format12h": "12 hours (AM/PM)",
+  "sectionHours": "Working time",
+  "dailyTarget": "Daily target",
+  "workDays": "Working days",
+  "trackingStart": "Count the balance from",
+  "sectionData": "Data",
+  "exportTitle": "Export / backup",
+  "exportFormat": "Format",
+  "exportWhat": "Data to export",
+  "includeAttachments": "Include attachment files (photos, audio, …)",
+  "exportButton": "Export",
+  "exportDone": "Export saved",
+  "exportCsvInfo": "CSV: one file per data type, grouped in a ZIP archive.",
+  "exportJsonInfo": "JSON: a single file, which can also be used to restore a backup.",
+  "importBackup": "Restore a JSON backup",
+  "importConfirm": "All current data will be replaced by the backup. Continue?",
+  "importDone": "Backup restored",
+  "settingsData": "Settings",
+  "aboutText": "TimeLog helps you track your working hours, keep a work journal and store notes with photos, audio, drawings and documents. All data stays on your device in a SQLite database.",
+  "hoursMinutes": "Hours and minutes",
+  "absencePart": "Absence covers",
+  "absenceFull": "Whole day",
+  "absenceMorning": "Morning",
+  "absenceAfternoon": "Afternoon",
+  "absenceCustom": "Custom duration",
+  "absenceDuration": "Absence duration",
+  "partialAbsenceHint": "Enter your times for the part of the day you worked.",
+  "notCredited": "not credited (taken from the balance)",
+  "totalCounted": "Total counted",
+  "addAbsence": "Absence over several days",
+  "absencePeriod": "Choose the dates",
+  "apply": "Apply",
+  "onlyWorkDaysInfo": "Only working days are changed. Times already entered are kept.",
+  "absenceApplied": "{count} day(s) updated",
+  "@absenceApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fullDayAbsence": "Whole-day absence: {type}",
+  "@fullDayAbsence": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "menuVacation": "Vacation",
+  "bookVacation": "Book vacation",
+  "vacationRemaining": "Vacation days left",
+  "vacationEntitlement": "Vacation entitlement for the year",
+  "vacationDefaultHint": "Default value from the settings, tap to change for this year",
+  "vacationCarryOver": "Carried over from last year",
+  "vacationUsePrevious": "Use the balance of {year}: {days} d.",
+  "@vacationUsePrevious": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "vacationTaken": "Taken",
+  "vacationPlanned": "Planned",
+  "vacationList": "Vacation days of the year",
+  "vacationExceeded": "More vacation booked than available.",
+  "vacationDaysPerYear": "Vacation days per year",
+  "daysCount": "{days} d.",
+  "@daysCount": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "workDaysInRange": "{count} working day(s) in this period",
+  "@workDaysInRange": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vacationPreview": "Uses {days} vacation day(s) · left afterwards: {left}",
+  "@vacationPreview": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "toolPen": "Pen",
+  "toolLine": "Straight line",
+  "toolArrow": "Arrow",
+  "toolRect": "Rectangle",
+  "toolCircle": "Circle",
+  "toolArc": "Arc",
+  "toolFill": "Fill area",
+  "toolObjectEraser": "Erase whole shapes",
+  "arcHint": "Drag the dot to bend the arc",
+  "pressureSim": "Simulated pressure: faster strokes are thinner",
+  "pressureShort": "Pressure",
+  "redo": "Redo",
+  "discardDrawingTitle": "Leave without saving?",
+  "discardDrawingMessage": "Your changes to the drawing will be lost. To keep them, use the ✓ button at the top right.",
+  "discardDrawing": "Leave without saving",
+  "keepDrawing": "Keep drawing",
+  "author": "Author",
+  "contact": "Contact",
+  "copy": "Copy",
+  "copied": "Copied",
+  "sourceCode": "Source code",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "menuSync": "Synchronization",
+  "syncIntro": "Synchronize all your data between several devices (phone, computer) through your TimeLog server. The app keeps working offline: changes are sent as soon as the server can be reached.",
+  "syncServer": "Server address",
+  "syncServerHint": "https://timelog.example.com",
+  "email": "E-mail",
+  "password": "Password",
+  "showPassword": "Show the password",
+  "signIn": "Sign in",
+  "signUp": "Create an account",
+  "signOut": "Sign out",
+  "syncMergeInfo": "The data of this device will be merged with the data of the account.",
+  "syncInsecure": "Unencrypted connection (http): the password and the data are sent in clear text. Use https:// outside your home network.",
+  "syncNow": "Synchronize now",
+  "syncLast": "Last synchronization: {time}",
+  "@syncLast": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNever": "Not synchronized yet",
+  "syncRunning": "Synchronizing…",
+  "syncOffline": "Server not reachable: changes will be sent later.",
+  "syncPending": "{count} change(s) waiting to be sent",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncUpToDate": "Everything is sent",
+  "syncAccount": "Account",
+  "syncSignOutConfirm": "The data stays on this device but will not be synchronized anymore.",
+  "syncDeleteAccount": "Delete the online account",
+  "syncDeleteAccountMessage": "The account and all its data will be deleted from the server. The data of this device is kept. Enter your password to confirm.",
+  "syncAccountDeleted": "Online account deleted",
+  "syncSessionExpired": "Session expired: please sign in again.",
+  "syncSignedIn": "Signed in",
+  "syncErrInvalidCredentials": "Wrong e-mail or password.",
+  "syncErrEmailTaken": "An account already exists with this e-mail.",
+  "syncErrInvalidEmail": "Invalid e-mail address.",
+  "syncErrWeakPassword": "The password must have 8 to 72 characters.",
+  "syncErrTooMany": "Too many attempts. Try again in 15 minutes.",
+  "syncErrNetwork": "Server not reachable. Check the address and the connection.",
+  "syncErrNotServer": "This address is not a TimeLog server.",
+  "syncErrOther": "Error: {code}",
+  "@syncErrOther": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "licenses": "Licenses"
+}

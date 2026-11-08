@@ -1,0 +1,42 @@
+name: timelog
+
+# TimeLog synchronization server: MariaDB + API (Go).
+#   cp .env.example .env   # then change the passwords
+#   docker compose up -d --build
+# The API listens on http://<this machine>:${TIMELOG_PORT:-8787}
+# Put it behind a reverse proxy with HTTPS for use over the Internet (see README.md).
+services:
+  db:
+    image: mariadb:12
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: timelog
+      MARIADB_USER: timelog
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+    # Attachments (photos, documents) are stored in the database.
+    command: ["--max-allowed-packet=512M", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_DSN: timelog:${DB_PASSWORD}@tcp(db:3306)/timelog?charset=utf8mb4&parseTime=true
+      LISTEN_ADDR: ":8080"
+      SESSION_DAYS: ${SESSION_DAYS:-180}
+      MAX_BODY_MB: ${MAX_BODY_MB:-256}
+    ports:
+      - "${TIMELOG_PORT:-8787}:8080"
+
+volumes:
+  db-data:

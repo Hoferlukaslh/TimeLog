@@ -1,0 +1,44 @@
+# Static analysis of TimeLog: `dart analyze` (and `dart format` for the style).
+include: package:flutter_lints/flutter.yaml
+
+formatter:
+  page_width: 120
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - linux/**
+    - lib/l10n/gen/**
+  language:
+    # No implicit dynamic: every type must be known.
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # Asynchronous code: a forgotten `await` must be explicit (`unawaited`).
+    - unawaited_futures
+    - avoid_void_async
+    - cancel_subscriptions
+    - close_sinks
+    # Types and safety.
+    - avoid_dynamic_calls
+    - always_declare_return_types
+    - only_throw_errors
+    - test_types_in_equals
+    # Readability.
+    - prefer_final_locals
+    - prefer_final_in_for_each
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_single_quotes
+    - directives_ordering
+    - avoid_redundant_argument_values
+    - unnecessary_parenthesis
+    - unnecessary_lambdas
+    - use_super_parameters
+    - sort_child_properties_last
+    - use_colored_box
+    - use_decorated_box

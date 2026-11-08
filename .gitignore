@@ -1,0 +1,57 @@
+# Règles communes à tout le dépôt.
+# Règles propres à chaque projet : app/.gitignore, app/android/.gitignore, server/.gitignore.
+
+# --- Secrets : ne jamais publier ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+key.properties
+local.properties
+google-services.json
+credentials*.json
+secrets/
+
+# --- Sauvegardes et données locales ---
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+*.zip
+
+# --- Builds et caches ---
+build/
+coverage/
+.dart_tool/
+.gradle/
+.kotlin/
+.cxx/
+/server/timelog
+/server/server
+*.exe
+*.apk
+*.aab
+
+# --- Éditeurs et IDE ---
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*~
+
+# --- Système ---
+.DS_Store
+Thumbs.db
+.directory
+
+# --- Divers ---
+*.log
+.claude/
