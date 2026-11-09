@@ -92,10 +92,14 @@ class SyncReport {
   final int pushed;
   final int pulled;
 
-  const SyncReport({required this.pushed, required this.pulled});
+  /// Received rows that really changed the local data. The server also sends
+  /// back what this device pushed: those rows are pulled but change nothing.
+  final int changed;
+
+  const SyncReport({required this.pushed, required this.pulled, this.changed = 0});
 
   @override
-  String toString() => 'SyncReport(pushed: $pushed, pulled: $pulled)';
+  String toString() => 'SyncReport(pushed: $pushed, pulled: $pulled, changed: $changed)';
 }
 
 /// Refused by the server: wrong e-mail / password, expired session, e-mail

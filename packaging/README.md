@@ -63,7 +63,7 @@ automatiquement sur les PC qui ne l'ont pas. Sans ce fichier, l'installeur ne l'
 Compilation manuelle, si besoin :
 
 ```powershell
-makensis /DAPP_VERSION=1.1.0 /DSOURCE_DIR=C:\...\app\build\windows\x64\runner\Release /DOUTPUT_DIR=C:\...\packaging\dist packaging\windows\timelog.nsi
+makensis /DAPP_VERSION=1.1.1 /DSOURCE_DIR=C:\...\app\build\windows\x64\runner\Release /DOUTPUT_DIR=C:\...\packaging\dist packaging\windows\timelog.nsi
 ```
 
 ## Ce qui a été vérifié

@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../data/repository.dart';
 import '../models/models.dart';
+import '../services/hours_calculator.dart';
 import '../services/settings.dart';
+import '../sync/reload_on_remote_changes.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
 import 'common.dart';
@@ -36,7 +38,7 @@ class DayEditor extends StatefulWidget {
   State<DayEditor> createState() => DayEditorState();
 }
 
-class DayEditorState extends State<DayEditor> {
+class DayEditorState extends State<DayEditor> with ReloadOnRemoteChanges {
   final _repo = Repository.instance;
   TimeEntry? _entry;
   bool _loaded = false;
@@ -51,28 +53,47 @@ class DayEditorState extends State<DayEditor> {
   @override
   void didUpdateWidget(DayEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!Dates.sameDay(oldWidget.date, widget.date)) reload();
+    if (!Dates.sameDay(oldWidget.date, widget.date)) {
+      _flushComment(oldWidget.date);
+      reload(replaceComment: true);
+    }
   }
 
   @override
   void dispose() {
+    _flushComment(widget.date);
     _comment.dispose();
     super.dispose();
   }
 
-  Future<void> reload() async {
+  @override
+  Future<void> reloadRemoteChanges() => reload();
+
+  /// The comment field contains text that is not saved yet.
+  bool get _commentEdited => _loaded && _comment.text != (_entry?.comment ?? '');
+
+  /// Saves a comment still being typed when the day is left.
+  void _flushComment(DateTime day) {
+    if (!_commentEdited) return;
+    _persist((_entry ?? TimeEntry(date: day)).copyWith(comment: _comment.text));
+  }
+
+  /// Reads the day again. The text being typed in the comment is kept (the
+  /// app also reloads when it comes back to the foreground or after a sync).
+  Future<void> reload({bool replaceComment = false}) async {
     final e = await _repo.timeEntry(widget.date);
     if (!mounted) return;
     setState(() {
+      final keepComment = !replaceComment && _commentEdited;
       _entry = e;
       _loaded = true;
-      _comment.text = e?.comment ?? '';
+      if (!keepComment && _comment.text != (e?.comment ?? '')) _comment.text = e?.comment ?? '';
     });
   }
 
   TimeEntry get _current => _entry ?? TimeEntry(date: widget.date);
 
-  Future<void> _save(TimeEntry e) async {
+  Future<void> _persist(TimeEntry e) async {
     final empty =
         e.arrival == null &&
         e.lunchStart == null &&
@@ -81,10 +102,14 @@ class DayEditorState extends State<DayEditor> {
         e.comment.isEmpty &&
         e.dayType == DayType.work;
     if (empty) {
-      await _repo.deleteTimeEntry(widget.date);
+      await _repo.deleteTimeEntry(e.date);
     } else {
       await _repo.saveTimeEntry(e);
     }
+  }
+
+  Future<void> _save(TimeEntry e) async {
+    await _persist(e);
     await reload();
     widget.onChanged?.call();
   }
@@ -100,7 +125,8 @@ class DayEditorState extends State<DayEditor> {
     }
     final m = await Pickers.time(context, initial, help: label);
     if (m == null || !mounted) return;
-    final n = e.withTime(index, m);
+    // _current: the day may have been updated by a sync while the picker was open.
+    final n = _current.withTime(index, m);
     if (!n.isChronological) {
       context.toast(context.l.timeOrderError);
       return;
@@ -214,7 +240,8 @@ class DayEditorState extends State<DayEditor> {
                   _row(l.totalCounted, Text(Fmt.duration(e.effectiveMinutes(target)), style: t.titleMedium)),
                 ],
                 _row(l.target, Text(Fmt.duration(target))),
-                if (_entry != null)
+                // Same rule as the summary: today only counts once finished.
+                if (_entry != null && HoursCalculator.compute(widget.date, widget.date, [e], s).days.first.counted)
                   _row(l.balance, BalanceText(e.effectiveMinutes(target) - target, style: t.titleMedium)),
               ],
             ),

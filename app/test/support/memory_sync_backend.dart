@@ -72,9 +72,9 @@ class MemorySyncBackend implements SyncBackend {
   Future<PullResult> pull(SyncSession session, String deviceId, String? cursor) async {
     final log = _log[_account(session)] ?? const [];
     final from = cursor == null ? 0 : int.parse(cursor);
+    // Like the real server: a device also receives back what it pushed.
     final changes = [
-      for (var i = from; i < log.length; i++)
-        if (log[i].$1 != deviceId) SyncChange.fromJson(jsonDecode(log[i].$2) as Map<String, Object?>),
+      for (var i = from; i < log.length; i++) SyncChange.fromJson(jsonDecode(log[i].$2) as Map<String, Object?>),
     ];
     return PullResult(changes, '${log.length}');
   }

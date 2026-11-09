@@ -9,6 +9,7 @@ import '../models/models.dart';
 import '../services/hours_calculator.dart';
 import '../services/settings.dart';
 import '../services/vacation_service.dart';
+import '../sync/reload_on_remote_changes.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/absence_range_dialog.dart';
@@ -24,7 +25,7 @@ class HoursScreen extends StatefulWidget {
   State<HoursScreen> createState() => _HoursScreenState();
 }
 
-class _HoursScreenState extends State<HoursScreen> with WidgetsBindingObserver {
+class _HoursScreenState extends State<HoursScreen> with WidgetsBindingObserver, ReloadOnRemoteChanges {
   final _repo = Repository.instance;
   late Period _period;
 
@@ -66,7 +67,11 @@ class _HoursScreenState extends State<HoursScreen> with WidgetsBindingObserver {
     unawaited(_editorKey.currentState?.reload());
   }
 
+  @override
+  Future<void> reloadRemoteChanges() => _load();
+
   Future<void> _load() async {
+    if (!mounted) return;
     final s = context.read<AppSettings>();
     final entries = await _repo.timeEntries(_period.start, _period.end);
     final today = Dates.today();
@@ -106,7 +111,8 @@ class _HoursScreenState extends State<HoursScreen> with WidgetsBindingObserver {
     final now = DateTime.now();
     final picked = await Pickers.time(context, now.hour * 60 + now.minute, help: clockStepLabel(context, step));
     if (picked == null || !mounted) return;
-    e = e.withTime(step, picked);
+    // May have been updated by a synchronization while the picker was open.
+    e = (_todayEntry ?? e).withTime(step, picked);
     if (!e.isChronological) {
       context.toast(l.timeOrderError);
       return;

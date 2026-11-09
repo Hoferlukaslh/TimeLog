@@ -59,7 +59,8 @@ class AppSettings extends ChangeNotifier {
       trackingStart = Dates.parseKey(ts);
     } else {
       // First launch: the balance starts today.
-      await _repo.saveSetting('trackingStart', Dates.key(trackingStart));
+      // A default, not a choice: it must not replace the value of an account.
+      await _repo.saveDefaultSetting('trackingStart', Dates.key(trackingStart));
     }
     notifyListeners();
   }

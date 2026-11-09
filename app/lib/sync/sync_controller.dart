@@ -162,9 +162,10 @@ class SyncController extends ChangeNotifier with WidgetsBindingObserver {
       status = SyncStatus.idle;
       lastError = null;
       lastSync = await engine.lastSync();
-      if (report.pulled > 0) {
-        dataVersion++;
+      if (report.changed > 0) {
+        // Settings and categories first: the screens reload with the new ones.
         await onRemoteChanges?.call();
+        dataVersion++;
       }
     } on SyncNetworkException catch (e) {
       status = SyncStatus.offline;
@@ -180,6 +181,11 @@ class SyncController extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         status = SyncStatus.error;
       }
+      if (!silent) rethrow;
+    } catch (e) {
+      // Unexpected reply or database error: never stay in "syncing".
+      status = SyncStatus.error;
+      lastError = e;
       if (!silent) rethrow;
     } finally {
       pending = _engine == null ? 0 : await engine.pendingCount();

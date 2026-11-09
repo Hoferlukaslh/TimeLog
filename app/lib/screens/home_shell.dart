@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import '../platform/platform.dart';
-import '../sync/sync_controller.dart';
 import '../utils/ui.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/responsive.dart';
@@ -59,7 +57,9 @@ class _HomeShellState extends State<HomeShell> {
 
   /// Ctrl+1 ... Ctrl+9: go to a section (in the order of the menu).
   bool _onKey(KeyEvent e) {
-    if (e is! KeyDownEvent || !HardwareKeyboard.instance.isControlPressed) return false;
+    // Windows reports AltGr as Ctrl+Alt: AltGr+2 is "@" on a Swiss keyboard, not a shortcut.
+    final keyboard = HardwareKeyboard.instance;
+    if (e is! KeyDownEvent || !keyboard.isControlPressed || keyboard.isAltPressed) return false;
     final i = _digits.indexOf(e.logicalKey);
     // Only on the main page: not behind an open note, a dialog...
     if (i < 0 || i >= Section.values.length || ModalRoute.of(context)?.isCurrent != true) return false;
@@ -72,8 +72,6 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final sidebar = Responsive.showsSidebar(context);
-    // Data received from another device: the section is rebuilt (reloaded).
-    final version = context.select((SyncController s) => s.dataVersion);
     return Row(
       children: [
         if (sidebar) ...[
@@ -91,7 +89,7 @@ class _HomeShellState extends State<HomeShell> {
         Expanded(
           key: const ValueKey('section'),
           child: KeyedSubtree(
-            key: ValueKey('$_section-$version'),
+            key: ValueKey(_section),
             child: _screen(sidebar ? null : AppDrawer(current: _section, onSelect: _select)),
           ),
         ),

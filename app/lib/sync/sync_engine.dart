@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:sqflite/sqflite.dart';
 
 import '../data/database.dart';
@@ -143,10 +144,11 @@ class SyncEngine {
 
     // 1. Receive.
     var pulled = 0;
+    var changed = 0;
     PullResult page;
     do {
       page = await backend.pull(s, device, await _meta('cursor'));
-      await _applyAll(page);
+      changed += await _applyAll(page);
       pulled += page.changes.length;
     } while (page.hasMore);
 
@@ -177,7 +179,7 @@ class SyncEngine {
       pushed += batch.length;
     }
     await _setMeta(db, 'last_sync', DateTime.now().toIso8601String());
-    return SyncReport(pushed: pushed, pulled: pulled);
+    return SyncReport(pushed: pushed, pulled: pulled, changed: changed);
   }
 
   /// E-mail of the last account used on this device (to fill the login form).
@@ -195,7 +197,8 @@ class SyncEngine {
   Future<int> pendingCount() async =>
       Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(DISTINCT tbl || uid) FROM sync_log')) ?? 0;
 
-  Future<void> _applyAll(PullResult page) async {
+  /// Applies a page of changes and returns how many really changed the local data.
+  Future<int> _applyAll(PullResult page) async {
     final order = {for (var i = 0; i < SyncSchema.tables.length; i++) SyncSchema.tables[i].name: i};
     final sorted = [...page.changes.where((c) => order.containsKey(c.table))]
       // Parents first for creations, children first for deletions.
@@ -204,16 +207,18 @@ class SyncEngine {
         final c = order[a.table]!.compareTo(order[b.table]!);
         return a.deleted ? -c : c;
       });
-    await db.transaction((txn) async {
+    return db.transaction((txn) async {
+      var changed = 0;
       await _setMeta(txn, 'applying', '1');
       try {
         for (final c in sorted) {
-          await _apply(txn, c);
+          if (await _apply(txn, c)) changed++;
         }
         await _setMeta(txn, 'cursor', page.cursor);
       } finally {
         await _setMeta(txn, 'applying', null);
       }
+      return changed;
     });
   }
 
@@ -262,7 +267,8 @@ class SyncEngine {
   }
 
   // ------------------------------------------------------------------ apply
-  Future<void> _apply(Transaction txn, SyncChange c) async {
+  /// Applies one change. Returns whether the local data is different afterwards.
+  Future<bool> _apply(Transaction txn, SyncChange c) async {
     final table = SyncSchema.table(c.table);
     final rows = await txn.query(table.name, where: 'uid = ?', whereArgs: [c.uid]);
     final local = rows.isEmpty ? null : rows.first;
@@ -283,8 +289,9 @@ class SyncEngine {
       // A newer local edit wins over the remote deletion.
       if (local != null && newestLocalEdit <= c.modifiedAt) {
         await txn.delete(table.name, where: 'uid = ?', whereArgs: [c.uid]);
+        return true;
       }
-      return;
+      return false;
     }
 
     // References are exchanged as uids.
@@ -295,12 +302,14 @@ class SyncEngine {
       values[col] = ref == null ? c.values[col] : await _idOf(txn, ref, c.values[col] as String?);
     }
     // An attachment whose note does not exist (anymore) is ignored.
-    if (table.name == 'attachments' && values['note_id'] == null) return;
+    if (table.name == 'attachments' && values['note_id'] == null) return false;
 
     int? id;
+    var changed = false;
     if (local == null) {
-      if (pendingDelete > c.modifiedAt) return; // deleted here after the remote edit
+      if (pendingDelete > c.modifiedAt) return false; // deleted here after the remote edit
       await txn.insert(table.name, {...values, 'uid': c.uid, 'modified_at': c.modifiedAt});
+      changed = true;
       if (table.name == 'attachments') {
         id =
             (await txn.query('attachments', columns: ['id'], where: 'uid = ?', whereArgs: [c.uid])).first['id']! as int;
@@ -311,16 +320,22 @@ class SyncEngine {
         for (final col in c.columns)
           if (values.containsKey(col) && (pending[col] ?? 0) <= c.timeOf(col)) col: values[col],
       };
+      changed = update.entries.any((e) => local[e.key] != e.value);
       final localAt = (local['modified_at'] as int?) ?? 0;
       update['modified_at'] = localAt > c.modifiedAt ? localAt : c.modifiedAt;
       await txn.update(table.name, update, where: 'uid = ?', whereArgs: [c.uid]);
       id = local['id'] as int?;
     }
     final data = c.data;
-    if (data != null && id != null && (pending['data'] ?? 0) <= c.timeOf('data')) {
+    if (data != null &&
+        id != null &&
+        (pending['data'] ?? 0) <= c.timeOf('data') &&
+        (local == null || !listEquals(await AppDatabase.readChunks(txn, id), data))) {
       await txn.delete('attachment_chunks', where: 'attachment_id = ?', whereArgs: [id]);
       await AppDatabase.writeChunks(txn, id, data);
+      changed = true;
     }
+    return changed;
   }
 
   // ---------------------------------------------------------------- helpers

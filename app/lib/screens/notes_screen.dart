@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../data/repository.dart';
 import '../models/models.dart';
 import '../services/settings.dart';
+import '../sync/reload_on_remote_changes.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/attachment_views.dart';
@@ -22,7 +23,7 @@ class NotesScreen extends StatefulWidget {
   State<NotesScreen> createState() => _NotesScreenState();
 }
 
-class _NotesScreenState extends State<NotesScreen> {
+class _NotesScreenState extends State<NotesScreen> with ReloadOnRemoteChanges {
   final _repo = Repository.instance;
   final _search = TextEditingController();
   Timer? _debounce;
@@ -48,6 +49,9 @@ class _NotesScreenState extends State<NotesScreen> {
     _search.dispose();
     super.dispose();
   }
+
+  @override
+  Future<void> reloadRemoteChanges() => _load();
 
   Future<void> _load() async {
     List<Note> list;

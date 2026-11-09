@@ -4,7 +4,7 @@ publish_to: 'none'
 
 # version: <build-name>+<build-number> (versionName / versionCode on Android).
 # Keep AppInfo.appVersion in lib/app_info.dart in sync (checked by a test).
-version: 1.1.0+2
+version: 1.1.1+3
 
 environment:
   sdk: ^3.13.7

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../services/settings.dart';
 import '../services/vacation_service.dart';
+import '../sync/reload_on_remote_changes.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/absence_range_dialog.dart';
@@ -20,7 +21,7 @@ class VacationScreen extends StatefulWidget {
   State<VacationScreen> createState() => _VacationScreenState();
 }
 
-class _VacationScreenState extends State<VacationScreen> {
+class _VacationScreenState extends State<VacationScreen> with ReloadOnRemoteChanges {
   final _service = VacationService();
   int _year = DateTime.now().year;
   VacationSummary? _summary;
@@ -31,7 +32,11 @@ class _VacationScreenState extends State<VacationScreen> {
     _load();
   }
 
+  @override
+  Future<void> reloadRemoteChanges() => _load();
+
   Future<void> _load() async {
+    if (!mounted) return;
     final s = await _service.summary(_year, context.read<AppSettings>());
     if (mounted) setState(() => _summary = s);
   }

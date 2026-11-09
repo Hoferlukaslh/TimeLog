@@ -35,6 +35,13 @@ class Repository {
 
   Future<void> saveSetting(String key, String value) => _upsert('settings', {'key': key, 'value': value}, 'key');
 
+  /// Saves a value chosen by the app. Dated "never", so that any value already
+  /// in the online account wins when this device signs in.
+  Future<void> saveDefaultSetting(String key, String value) async {
+    await saveSetting(key, value);
+    await _db.update('settings', {'modified_at': 0}, where: 'key = ?', whereArgs: [key]);
+  }
+
   // -------------------------------------------------------------- categories
   Future<List<Category>> categories() async {
     final rows = await _db.query('categories', orderBy: 'name COLLATE NOCASE');
@@ -115,7 +122,9 @@ class Repository {
       final m = e.toMap()..remove('id');
       return _db.insert('journal_entries', m);
     }
-    await _db.update('journal_entries', e.toMap(), where: 'id = ?', whereArgs: [e.id]);
+    final updated = await _db.update('journal_entries', e.toMap(), where: 'id = ?', whereArgs: [e.id]);
+    // Deleted on another device while it was being edited: the text is kept.
+    if (updated == 0) return _db.insert('journal_entries', e.toMap()..remove('id'));
     return e.id!;
   }
 
@@ -183,7 +192,9 @@ class Repository {
       final m = n.toMap()..remove('id');
       return _db.insert('notes', m);
     }
-    await _db.update('notes', n.toMap(), where: 'id = ?', whereArgs: [n.id]);
+    final updated = await _db.update('notes', n.toMap(), where: 'id = ?', whereArgs: [n.id]);
+    // Deleted on another device while it was being edited: the text is kept.
+    if (updated == 0) return _db.insert('notes', n.toMap()..remove('id'));
     return n.id!;
   }
 

@@ -2,7 +2,7 @@
 # Ce fichier est copié et adapté (pkgver) par packaging/build-linux.sh, qui fournit
 # l'archive source (arborescence usr/ déjà installée à l'échelle du système).
 pkgname=timelog
-pkgver=1.1.0
+pkgver=1.1.1
 pkgrel=1
 pkgdesc="Heures, journal de travail et notes (hors ligne, synchronisation optionnelle)"
 arch=('x86_64')

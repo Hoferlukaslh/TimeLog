@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../data/repository.dart';
 import '../models/models.dart';
 import '../services/settings.dart';
+import '../sync/reload_on_remote_changes.dart';
 import '../utils/dates.dart';
 import '../utils/ui.dart';
 import '../widgets/common.dart';
@@ -19,7 +20,7 @@ class JournalScreen extends StatefulWidget {
   State<JournalScreen> createState() => _JournalScreenState();
 }
 
-class _JournalScreenState extends State<JournalScreen> {
+class _JournalScreenState extends State<JournalScreen> with ReloadOnRemoteChanges {
   final _repo = Repository.instance;
   bool _addMode = false;
   late Period _period;
@@ -35,6 +36,9 @@ class _JournalScreenState extends State<JournalScreen> {
     _period = Period.containing(PeriodType.week, Dates.today(), context.read<AppSettings>().firstWeekday);
     _load();
   }
+
+  @override
+  Future<void> reloadRemoteChanges() => _load();
 
   Future<void> _load() async {
     final list = await _repo.journal(_period.start, _period.end);

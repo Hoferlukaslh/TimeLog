@@ -13,6 +13,7 @@ import 'services/categories_store.dart';
 import 'services/settings.dart';
 import 'services/widget_sync.dart';
 import 'sync/sync_controller.dart';
+import 'widgets/attachment_views.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,7 @@ Future<void> main() async {
   final sync = SyncController(
     AppDatabase.instance.db,
     onRemoteChanges: () async {
+      AttachmentCache.clear(); // a file may have been replaced on another device
       await settings.load();
       await categories.load();
       await WidgetSync.refresh();

@@ -16,7 +16,7 @@ ManifestDPIAware true
 !define ROOT_DIR "${__FILEDIR__}\..\.."
 
 !ifndef APP_VERSION
-  !define APP_VERSION "1.1.0"
+  !define APP_VERSION "1.1.1"
 !endif
 !ifndef SOURCE_DIR
   !define SOURCE_DIR "${ROOT_DIR}\app\build\windows\x64\runner\Release"
