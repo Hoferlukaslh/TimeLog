@@ -32,5 +32,5 @@ FROM web-${WEB_ENABLED} AS web
 # Run: non-root NGINX, listening on 8080.
 FROM nginxinc/nginx-unprivileged:1.29-alpine
 COPY --from=web /out/ /usr/share/timelog/
-COPY server/gateway/configure.sh /docker-entrypoint.d/40-timelog.sh
+COPY --chmod=755 server/gateway/configure.sh /docker-entrypoint.d/40-timelog.sh
 EXPOSE 8080
